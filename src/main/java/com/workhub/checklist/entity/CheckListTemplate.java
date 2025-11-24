@@ -25,8 +25,7 @@ public class CheckListTemplate {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "check_list_item_id")
-    private Long checkListItemId;
-
+    @Column(name = "template_hashtag")
+    private TemplateHashtag templateHashtag;
 
 }
