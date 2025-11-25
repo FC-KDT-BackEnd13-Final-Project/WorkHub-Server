@@ -4,7 +4,6 @@ import com.workhub.cs.dto.CsPostFileRequest;
 import com.workhub.cs.dto.CsPostRequest;
 import com.workhub.cs.dto.CsPostResponse;
 import com.workhub.cs.entity.CsPost;
-import com.workhub.cs.entity.CsPostFile;
 import com.workhub.cs.repository.CsPostFileRepository;
 import com.workhub.cs.repository.CsPostRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +52,7 @@ public class CsPostServiceTest {
     void givenCsPostCreateRequest_whenCreateCsPost_thenSuccess() {
         // given
         Long projectId = 1L;
-        CsPostRequest request = CsPostRequest.of("문의 제목", "문의 내용", null);
+        CsPostRequest request = new CsPostRequest("문의 제목", "문의 내용", null);
 
         when(csPostRepository.save(any(CsPost.class)))
                 .thenReturn(mockSaved);
@@ -67,7 +66,7 @@ public class CsPostServiceTest {
         assertThat(result.getContent()).isEqualTo("문의 내용");
 
         verify(csPostRepository).save(any(CsPost.class));
-        verify(csPostFileRepository, never()).save(any(CsPostFile.class));
+        verify(csPostFileRepository, never()).saveAll(anyList());
     }
 
     @Test
@@ -76,23 +75,23 @@ public class CsPostServiceTest {
         // given
         Long projectId = 1L;
 
-        List<CsPostFileRequest> fileRequests = Arrays.asList(new CsPostFileRequest("url1", "file", 1),
-                new CsPostFileRequest("url2", "file", 2));
+        List<CsPostFileRequest> fileRequests = Arrays.asList(
+                new CsPostFileRequest("url1", "file1", 1),
+                new CsPostFileRequest("url2", "file2", 2)
+        );
 
         CsPostRequest request =
-                CsPostRequest.of("문의 제목", "내용", fileRequests);
+                new CsPostRequest("문의 제목", "내용", fileRequests);
 
         when(csPostRepository.save(any(CsPost.class)))
                 .thenReturn(mockSaved);
 
-        when(csPostFileRepository.save(any(CsPostFile.class)))
-                .thenAnswer(i -> i.getArgument(0));
         // when
         csPostService.create(projectId, request);
 
         // then
         verify(csPostRepository).save(any(CsPost.class));
-        verify(csPostFileRepository, times(2)).save(any(CsPostFile.class));
+        verify(csPostFileRepository, times(1)).saveAll(anyList()); // saveAll만 호출됨
     }
 
     // todo : 프로젝트 밸리데이터 붙이고 나서 테스트 해야 함
@@ -109,7 +108,7 @@ public class CsPostServiceTest {
         Long projectId = 1L;
         Long userId = 2L;
 
-        CsPostRequest request = CsPostRequest.of("문의 제목", "문의 내용", null);
+        CsPostRequest request = new CsPostRequest("문의 제목", "문의 내용", null);
         when(csPostRepository.save(any(CsPost.class)))
                 .thenReturn(mockSaved);
 

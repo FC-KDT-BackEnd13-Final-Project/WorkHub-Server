@@ -31,7 +31,7 @@ public class CsPostResponse {
                 .content(post.getContent())
                 .userId(post.getUserId())
                 .files(
-                        fileList == null ? null :
+                        fileList == null ? List.of() :
                                 fileList.stream()
                                         .map(f -> new CsPostFileResponse(
                                                 f.getCsPostFileId(),
