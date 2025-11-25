@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @NoArgsConstructor
@@ -24,23 +25,20 @@ public class CsPostResponse {
     private List<CsPostFileResponse> files;
 
     public static CsPostResponse from(CsPost post, List<CsPostFile> fileList) {
+
+        List<CsPostFileResponse> fileResponses =
+                (fileList == null) ? Collections.emptyList() :
+                        fileList.stream()
+                                .map(CsPostFileResponse::from)
+                                .toList();
+
         return CsPostResponse.builder()
                 .csPostId(post.getCsPostId())
                 .deletedAt(post.getDeletedAt())
                 .title(post.getTitle())
                 .content(post.getContent())
                 .userId(post.getUserId())
-                .files(
-                        fileList == null ? List.of() :
-                                fileList.stream()
-                                        .map(f -> new CsPostFileResponse(
-                                                f.getCsPostFileId(),
-                                                f.getFileUrl(),
-                                                f.getFileName(),
-                                                f.getFileOrder()
-                                        ))
-                                        .toList()
-                )
+                .files(fileResponses)
                 .build();
     }
 }
