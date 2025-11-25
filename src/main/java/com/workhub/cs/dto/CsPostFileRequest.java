@@ -1,4 +1,8 @@
 package com.workhub.cs.dto;
 
-public record CsPostFileRequest() {
+public record CsPostFileRequest(
+        String fileUrl,
+        String fileName,
+        Integer fileOrder
+) {
 }
