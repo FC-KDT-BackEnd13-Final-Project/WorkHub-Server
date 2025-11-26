@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
-
+    private final PasswordEncoder passwordEncoder;
 
     public UserTable getUserById(Long id) {
         Integer userId = Math.toIntExact(id);
@@ -26,7 +26,9 @@ public class UserService {
         UserTable userTable = userRepository.findByLoginId(userLoginRecord.loginId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_LOGIN_CREDENTIALS));
 
-
+        if (!passwordEncoder.matches(userLoginRecord.password(), userTable.getPassword())) {
+            throw new BusinessException(ErrorCode.INVALID_LOGIN_CREDENTIALS);
+        }
 
         return userTable;
     }
