@@ -42,3 +42,7 @@ logging:
 
 server:
   port: 0
+
+file:
+  upload:
+    max-size: 10MB
