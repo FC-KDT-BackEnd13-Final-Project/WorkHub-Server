@@ -24,16 +24,20 @@ spring:
   flyway:
     enabled: false
 
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      stack:
+        auto: false
+      s3:
+        enabled: false
+      secrets-manager:
+        enabled: false
+
 logging:
   level:
     root: INFO
 
 server:
   port: 0
-
-cloud:
-  aws:
-    region:
-      static: ap-northeast-2
-    stack:
-      auto: false
