@@ -40,9 +40,17 @@ public class S3Service {
      */
     public String uploadFile(MultipartFile file) {
 
+        String originalFilename = file.getOriginalFilename();
+
+        if (originalFilename == null || originalFilename.trim().isEmpty()) {
+            log.error("File upload failed: Original filename is missing or empty.");
+            // 파일명이 없거나 비어있는 것은 잘못된 입력으로 간주.
+            throw new BusinessException(ErrorCode.INVALID_FILE_NAME);
+        }
+
         validateFileSize(file);
-        validateFileExtension(file.getOriginalFilename());
-        String fileName = generateFileName(file.getOriginalFilename());
+        validateFileExtension(originalFilename);
+        String fileName = generateFileName(originalFilename);
 
         uploadToS3(file, fileName);
 
@@ -121,7 +129,7 @@ public class S3Service {
 
         String extension = "";
         if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
         }
         return UUID.randomUUID().toString() + extension;
     }
