@@ -30,3 +30,10 @@ logging:
 
 server:
   port: 0
+
+cloud:
+  aws:
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
