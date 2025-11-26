@@ -32,6 +32,7 @@ spring:
         auto: false
       s3:
         enabled: false
+        bucket: test-bucket
       secrets-manager:
         enabled: false
 
