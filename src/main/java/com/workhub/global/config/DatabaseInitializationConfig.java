@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 
@@ -16,6 +17,7 @@ import org.springframework.core.Ordered;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "spring.flyway.enabled", havingValue = "true", matchIfMissing = true)
 public class DatabaseInitializationConfig implements ApplicationRunner, Ordered {
 
     private final Flyway flyway;  // Spring Boot가 생성한 Flyway bean 주입

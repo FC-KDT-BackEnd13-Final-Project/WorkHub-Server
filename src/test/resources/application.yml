@@ -1,5 +1,11 @@
 # src/test/resources/application.yml
 spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
   flyway:
     enabled: false  # ✨ 인덱스 없어도 OK
 
@@ -7,3 +13,22 @@ spring:
     hibernate:
       ddl-auto: create-drop  # 테스트용 테이블 생성
     show-sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+
+  main:
+    allow-bean-definition-overriding: true  # 테스트용 Mock 빈 override 허용
+
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      credentials:
+        access-key: test-access-key
+        secret-key: test-secret-key
+      s3:
+        enabled: false
+        bucket: test-bucket
+
+file:
+  upload:
+    max-size: 10485760  # 10MB
