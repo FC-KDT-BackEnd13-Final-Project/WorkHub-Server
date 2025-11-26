@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
-public class CsPostValidator {
+public class CsPostValidatorImpl implements CsPostValidator {
 
     private final CsPostRepository csPostRepository;
 
