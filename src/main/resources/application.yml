@@ -16,3 +16,12 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
+
+workhub:
+  admin:
+    bootstrap-enabled: true
+    login-id: admin
+    password: Admin!234
+    email: admin@workhub.com
+    phone: "01000000000"
+    company-id: 1
