@@ -1,4 +1,4 @@
-package com.workhub.projectNode;
+package com.workhub.project.entity;
 
 import com.workhub.global.entity.ActionType;
 import jakarta.persistence.*;
@@ -15,8 +15,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Entity
-@Table(name = "project_node_history")
-public class ProjectNodeHistory {
+@Table(name = "project_history")
+public class ProjectHistory {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "change_log_id")

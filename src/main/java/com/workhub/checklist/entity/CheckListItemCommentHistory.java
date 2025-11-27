@@ -1,4 +1,4 @@
-package com.workhub.projectNode;
+package com.workhub.checklist.entity;
 
 import com.workhub.global.entity.ActionType;
 import jakarta.persistence.*;
@@ -14,9 +14,10 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Table(name = "check_list_item_comment_history")
 @Entity
-@Table(name = "project_node_history")
-public class ProjectNodeHistory {
+public class CheckListItemCommentHistory {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "change_log_id")
