@@ -1,6 +1,5 @@
 package com.workhub.cs.entity;
 
-import com.workhub.cs.dto.CsPostFileRequest;
 import com.workhub.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -32,13 +31,4 @@ public class CsPostFile extends BaseTimeEntity {
 
     @Column(name = "cs_post_id")
     private Long csPostId;
-
-    public static CsPostFile of(Long csPostId, CsPostFileRequest request) {
-        return CsPostFile.builder()
-                .csPostId(csPostId)
-                .fileUrl(request.fileUrl())
-                .fileName(request.fileName())
-                .fileOrder(request.fileOrder())
-                .build();
-    }
 }

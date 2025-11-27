@@ -16,7 +16,7 @@ import lombok.experimental.SuperBuilder;
 public class UserTable extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
+    private Integer userId;
 
     @Column(name = "login_id", nullable = false, length = 30)
     private String loginId;
