@@ -4,8 +4,8 @@ import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.userTable.dto.UserLoginRecord;
 import com.workhub.userTable.dto.UserRegisterRecord;
-import com.workhub.userTable.entity.Roleenum;
 import com.workhub.userTable.entity.Status;
+import com.workhub.userTable.entity.UserRole;
 import com.workhub.userTable.entity.UserTable;
 import com.workhub.userTable.repository.UserRepository;
 import java.time.LocalDateTime;
@@ -105,7 +105,7 @@ class UserServiceTest {
                 "fresh@workhub.com",
                 "01012345678",
                 1L,
-                Roleenum.CLIENT
+                UserRole.CLIENT
         );
 
         given(userRepository.existsByLoginId("freshUser")).willReturn(false);
@@ -117,7 +117,7 @@ class UserServiceTest {
 
         assertThat(created.getLoginId()).isEqualTo("freshUser");
         assertThat(created.getPassword()).isEqualTo("encoded");
-        assertThat(created.getRole()).isEqualTo(Roleenum.CLIENT);
+        assertThat(created.getRole()).isEqualTo(UserRole.CLIENT);
         assertThat(created.getStatus()).isEqualTo(Status.ACTIVE);
         assertThat(created.getCompanyId()).isEqualTo(1L);
 
@@ -134,7 +134,7 @@ class UserServiceTest {
                 "dup@workhub.com",
                 "01012345678",
                 1L,
-                Roleenum.CLIENT
+                UserRole.CLIENT
         );
 
         given(userRepository.existsByLoginId("duplicate")).willReturn(true);
@@ -158,7 +158,7 @@ class UserServiceTest {
                 "dup@workhub.com",
                 "01012345678",
                 1L,
-                Roleenum.CLIENT
+                UserRole.CLIENT
         );
 
         given(userRepository.existsByLoginId("freshUser")).willReturn(false);
@@ -180,7 +180,7 @@ class UserServiceTest {
                 .password("encoded")
                 .email("admin@workhub.com")
                 .phone("01000000000")
-                .role(Roleenum.ADMIN)
+                .role(UserRole.ADMIN)
                 .status(Status.ACTIVE)
                 .companyId(1L)
                 .createdAt(LocalDateTime.now())
