@@ -1,6 +1,10 @@
 package com.workhub.cs.entity;
 
+import com.workhub.cs.dto.CsPostRequest;
+import com.workhub.cs.dto.CsPostUpdateRequest;
 import com.workhub.global.entity.BaseTimeEntity;
+import com.workhub.global.error.ErrorCode;
+import com.workhub.global.error.exception.BusinessException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -37,4 +41,33 @@ public class CsPost extends BaseTimeEntity {
 
     @Column(name = "user_id")
     private Long userId;
+
+    public static CsPost of(Long projectId, CsPostRequest request) {
+        return CsPost.builder()
+                .projectId(projectId)
+                .title(request.title())
+                .content(request.content())
+                .build();
+    }
+
+    public static CsPost of(Long projectId, CsPostUpdateRequest request) {
+        return CsPost.builder()
+                .title(request.title())
+                .content(request.content())
+                .build();
+    }
+
+    public void updateTitle(String newTitle) {
+        if (newTitle == null && newTitle.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_CS_POST_TITLE);
+        }
+        this.title = newTitle;
+    }
+
+    public void updateContent(String newContent) {
+        if (newContent == null && newContent.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_CS_POST_CONTENT);
+        }
+        this.content = newContent;
+    }
 }

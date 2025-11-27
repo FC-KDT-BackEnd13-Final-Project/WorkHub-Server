@@ -6,6 +6,7 @@ import com.workhub.post.entity.HashTag;
 import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostType;
 import com.workhub.post.record.request.PostRequest;
+import com.workhub.post.record.request.PostUpdateRequest;
 import com.workhub.post.repository.PostRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,7 +46,7 @@ public class PostServiceTest {
     @DisplayName("정상적으로 게시글을 생성하면 저장된 엔티티를 반환한다")
     void create_success_shouldReturnSavedPost() {
         Post saved = Post.builder()
-                .id(10L)
+                .postId(10L)
                 .title("title")
                 .content("content")
                 .type(PostType.NOTICE)
@@ -60,8 +61,46 @@ public class PostServiceTest {
 
         Post result = postService.create(request);
 
-        assertThat(result.getId()).isEqualTo(10L);
+        assertThat(result.getPostId()).isEqualTo(10L);
         assertThat(result.getTitle()).isEqualTo("title");
     }
+
+    @Test
+    @DisplayName("수정 대상 게시글이 없으면 예외를 던진다")
+    void update_withPostNotFound_shouldThrow() {
+        given(postRepository.findById(99L)).willReturn(Optional.empty());
+
+        PostUpdateRequest request = new PostUpdateRequest(
+                "edited title", PostType.NOTICE, "edited content", "10.0.0.1", HashTag.DESIGN
+        );
+
+        assertThatThrownBy(() -> postService.update(99L, request))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("게시글을 수정하면 필드가 갱신된다")
+    void update_success_shouldChangeFields() {
+        Post origin = Post.builder()
+                .postId(1L)
+                .title("old")
+                .content("old")
+                .type(PostType.GENERAL)
+                .postIp("1.1.1.1")
+                .hashtag(HashTag.REQ_DEF)
+                .build();
+        given(postRepository.findById(1L)).willReturn(Optional.of(origin));
+
+        PostUpdateRequest request = new PostUpdateRequest(
+                "new", PostType.NOTICE, "new content", "2.2.2.2", HashTag.DESIGN
+        );
+
+        Post result = postService.update(1L, request);
+
+        assertThat(result.getTitle()).isEqualTo("new");
+        assertThat(result.getPostIp()).isEqualTo("2.2.2.2");
+    }
+
 
 }

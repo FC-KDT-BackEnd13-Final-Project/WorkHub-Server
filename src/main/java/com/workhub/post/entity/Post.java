@@ -1,13 +1,13 @@
 package com.workhub.post.entity;
 
 import com.workhub.global.entity.BaseTimeEntity;
+import com.workhub.post.record.request.PostRequest;
+import com.workhub.post.record.request.PostUpdateRequest;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-
-import java.util.List;
 
 @Entity
 @Table(name = "post")
@@ -19,7 +19,8 @@ public class Post extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "post_id")
+    private Long postId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
@@ -32,23 +33,37 @@ public class Post extends BaseTimeEntity {
     private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "hashtag", nullable = false)
+    @Column(name = "hashtag")
     private HashTag hashtag;
 
-    @Column(name = "post_ip")
+    @Column(name = "post_ip", length = 20)
     private String postIp;
 
     @Column(name = "user_id")
-    private String userId;
+    private Long userId;
 
     @Column(name = "project_node_id")
-    private String projectNodeId;
+    private Long projectNodeId;
 
-    @ManyToOne
-    @JoinColumn(name = "parent_post_id")
-    private Post parentPostId;
+    @Column(name = "parent_post_id")
+    private Long parentPostId;
 
-    @OneToMany(mappedBy = "parentPostId")
-    private List<Post> posts;
+    public static Post of(Long parentPostId, PostRequest request) {
+        return Post.builder()
+                .type(request.postType())
+                .title(request.title())
+                .content(request.content())
+                .postIp(request.postIp())
+                .hashtag(request.hashTag())
+                .parentPostId(parentPostId)
+                .build();
+    }
 
+    public void update(PostUpdateRequest request) {
+        this.title = request.title();
+        this.content = request.content();
+        this.type = request.postType();
+        this.postIp = request.postIp();
+        this.hashtag = request.hashTag();
+    }
 }
