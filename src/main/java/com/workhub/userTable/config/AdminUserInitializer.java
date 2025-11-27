@@ -1,7 +1,7 @@
 package com.workhub.userTable.config;
 
+import com.workhub.userTable.entity.UserRole;
 import com.workhub.userTable.repository.UserRepository;
-import com.workhub.userTable.entity.Roleenum;
 import com.workhub.userTable.entity.Status;
 import com.workhub.userTable.entity.UserTable;
 import jakarta.annotation.PostConstruct;
@@ -54,7 +54,7 @@ public class AdminUserInitializer {
                 .password(passwordEncoder.encode(password))
                 .email(email)
                 .phone(phone)
-                .role(Roleenum.ADMIN)
+                .role(UserRole.ADMIN)
                 .status(Status.ACTIVE)
                 .companyId(companyId)
                 .build();

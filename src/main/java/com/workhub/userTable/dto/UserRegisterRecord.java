@@ -1,6 +1,6 @@
 package com.workhub.userTable.dto;
 
-import com.workhub.userTable.entity.Roleenum;
+import com.workhub.userTable.entity.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,6 +27,6 @@ public record UserRegisterRecord(
         Long companyId,
 
         @NotNull
-        Roleenum role
+        UserRole role
 ) {
 }

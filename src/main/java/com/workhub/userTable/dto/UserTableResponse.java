@@ -1,7 +1,7 @@
 package com.workhub.userTable.dto;
 
-import com.workhub.userTable.entity.Roleenum;
 import com.workhub.userTable.entity.Status;
+import com.workhub.userTable.entity.UserRole;
 import com.workhub.userTable.entity.UserTable;
 
 public record UserTableResponse(
@@ -9,7 +9,7 @@ public record UserTableResponse(
         String loginId,
         String email,
         String phone,
-        Roleenum role,
+        UserRole role,
         Status status,
         Long companyId
 ) {
