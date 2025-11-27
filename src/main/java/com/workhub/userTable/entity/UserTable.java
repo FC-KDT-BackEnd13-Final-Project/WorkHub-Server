@@ -1,5 +1,6 @@
 package com.workhub.userTable.entity;
 
+import com.workhub.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserTable {
+public class UserTable extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -33,15 +34,12 @@ public class UserTable {
     private String phone;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private Roleenum role;
+    @Column(name = "user_role", nullable = false)
+    private UserRole role;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private Status status;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
 
     @Column(name = "lasted_at")
     private LocalDateTime lastedAt;

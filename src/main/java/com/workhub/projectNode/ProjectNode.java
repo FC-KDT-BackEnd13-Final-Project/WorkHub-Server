@@ -52,4 +52,5 @@ public class ProjectNode extends BaseTimeEntity {
 
     @Column(name = "user_id")
     private Long userId;
+
 }
