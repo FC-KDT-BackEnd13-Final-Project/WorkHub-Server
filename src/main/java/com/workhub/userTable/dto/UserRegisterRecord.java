@@ -1,4 +1,4 @@
-package com.workhub.dto;
+package com.workhub.userTable.dto;
 
 import com.workhub.userTable.entity.Roleenum;
 import jakarta.validation.constraints.Email;
@@ -13,9 +13,6 @@ public record UserRegisterRecord(
 
         @NotBlank
         String password,
-
-        @NotBlank
-        String confirmPassword,
 
         @NotBlank
         @Email

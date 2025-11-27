@@ -1,4 +1,4 @@
-package com.workhub.repository;
+package com.workhub.userTable.repository;
 
 import com.workhub.userTable.entity.UserTable;
 import org.springframework.data.jpa.repository.JpaRepository;

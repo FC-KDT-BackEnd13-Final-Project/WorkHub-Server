@@ -1,6 +1,6 @@
 package com.workhub.userTable.config;
 
-import com.workhub.repository.UserRepository;
+import com.workhub.userTable.repository.UserRepository;
 import com.workhub.userTable.entity.Roleenum;
 import com.workhub.userTable.entity.Status;
 import com.workhub.userTable.entity.UserTable;

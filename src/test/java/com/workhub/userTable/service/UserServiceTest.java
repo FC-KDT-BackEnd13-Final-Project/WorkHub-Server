@@ -1,10 +1,10 @@
 package com.workhub.userTable.service;
 
-import com.workhub.dto.UserLoginRecord;
-import com.workhub.dto.UserRegisterRecord;
+import com.workhub.userTable.dto.UserLoginRecord;
+import com.workhub.userTable.dto.UserRegisterRecord;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
-import com.workhub.repository.UserRepository;
+import com.workhub.userTable.repository.UserRepository;
 import com.workhub.userTable.entity.Roleenum;
 import com.workhub.userTable.entity.Status;
 import com.workhub.userTable.entity.UserTable;
@@ -13,10 +13,13 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +29,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -36,27 +40,29 @@ class UserServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private AuthenticationManager authenticationManager;
+
     @InjectMocks
     private UserService userService;
 
     @Test
     @DisplayName("로그인 성공 시 사용자 정보를 반환한다")
     void login_success() {
-        UserTable mockUser = sampleUser();
-        given(userRepository.findByLoginId("admin")).willReturn(Optional.of(mockUser));
-        given(passwordEncoder.matches("plain-password", mockUser.getPassword())).willReturn(true);
+        Authentication authentication = mock(Authentication.class);
+        given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).willReturn(authentication);
 
-        UserTable result = userService.login(new UserLoginRecord("admin", "plain-password"));
+        Authentication result = userService.login(new UserLoginRecord("admin", "plain-password"));
 
-        assertThat(result).isSameAs(mockUser);
-        verify(userRepository).findByLoginId("admin");
-        verify(passwordEncoder).matches("plain-password", mockUser.getPassword());
+        assertThat(result).isSameAs(authentication);
+        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
     }
 
     @Test
     @DisplayName("존재하지 않는 아이디로 로그인 시 예외가 발생한다")
     void login_userNotFound() {
-        given(userRepository.findByLoginId("missing")).willReturn(Optional.empty());
+        given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .willThrow(new BadCredentialsException("bad"));
 
         assertThatThrownBy(() -> userService.login(new UserLoginRecord("missing", "pw")))
                 .isInstanceOf(BusinessException.class)
@@ -64,20 +70,20 @@ class UserServiceTest {
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.INVALID_LOGIN_CREDENTIALS);
 
-        verify(passwordEncoder, never()).matches(anyString(), anyString());
+        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
     }
 
     @Test
     @DisplayName("비밀번호가 일치하지 않으면 예외가 발생한다")
     void login_invalidPassword() {
-        UserTable mockUser = sampleUser();
-        given(userRepository.findByLoginId("admin")).willReturn(Optional.of(mockUser));
-        given(passwordEncoder.matches("wrong", mockUser.getPassword())).willReturn(false);
+        given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .willThrow(new BadCredentialsException("bad"));
 
         assertThatThrownBy(() -> userService.login(new UserLoginRecord("admin", "wrong")))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.INVALID_LOGIN_CREDENTIALS);
+        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
     }
 
     @Test
