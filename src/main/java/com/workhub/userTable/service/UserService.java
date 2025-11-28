@@ -1,6 +1,7 @@
 package com.workhub.userTable.service;
 
 import com.workhub.userTable.dto.UserLoginRecord;
+import com.workhub.userTable.dto.UserPasswordResetDto;
 import com.workhub.userTable.dto.UserRegisterRecord;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
@@ -47,7 +48,6 @@ public class UserService {
         validateLoginId(record.loginId());
         validateEmail(record.email());
 
-
         UserTable userTable = UserTable.builder()
                 .loginId(record.loginId())
                 .password(passwordEncoder.encode(record.password()))
@@ -59,6 +59,16 @@ public class UserService {
                 .build();
         
         return userRepository.save(userTable);
+    }
+
+    @Transactional
+    public void resetPassword(Long targetUserId, UserPasswordResetDto passwordResetDto) {
+        if (!passwordResetDto.newPassword().equals(passwordResetDto.confirmPassword())) {
+            throw new BusinessException(ErrorCode.NOT_EQUAL_PASSWORD);
+        }
+
+        UserTable userTable = getUserById(targetUserId);
+        userTable.updatePassword(passwordEncoder.encode(passwordResetDto.newPassword()));
     }
 
     private void validateLoginId(String loginId) {
