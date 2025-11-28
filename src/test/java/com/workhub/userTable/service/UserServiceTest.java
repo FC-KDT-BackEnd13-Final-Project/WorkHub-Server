@@ -3,6 +3,7 @@ package com.workhub.userTable.service;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.userTable.dto.UserLoginRecord;
+import com.workhub.userTable.dto.UserPasswordResetDto;
 import com.workhub.userTable.dto.UserRegisterRecord;
 import com.workhub.userTable.entity.Status;
 import com.workhub.userTable.entity.UserRole;
@@ -25,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
@@ -171,6 +173,36 @@ class UserServiceTest {
 
         verify(passwordEncoder, never()).encode(anyString());
         verify(userRepository, never()).save(any(UserTable.class));
+    }
+
+    @Test
+    @DisplayName("비밀번호 재설정 요청이 성공하면 암호화된 비밀번호로 갱신된다")
+    void resetPassword_success() {
+        UserTable user = sampleUser();
+        UserPasswordResetDto resetDto = new UserPasswordResetDto("NewPass!234", "NewPass!234");
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(passwordEncoder.encode("NewPass!234")).willReturn("encoded-new");
+
+        userService.resetPassword(1L, resetDto);
+
+        assertThat(user.getPassword()).isEqualTo("encoded-new");
+        verify(passwordEncoder).encode("NewPass!234");
+        verify(userRepository).findById(1L);
+    }
+
+    @Test
+    @DisplayName("새 비밀번호와 확인 비밀번호가 다르면 예외를 던지고 저장하지 않는다")
+    void resetPassword_mismatch() {
+        UserPasswordResetDto resetDto = new UserPasswordResetDto("NewPass!234", "Mismatch!234");
+
+        assertThatThrownBy(() -> userService.resetPassword(1L, resetDto))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.NOT_EQUAL_PASSWORD);
+
+        verify(userRepository, never()).findById(anyLong());
+        verify(passwordEncoder, never()).encode(anyString());
     }
 
     private UserTable sampleUser() {
