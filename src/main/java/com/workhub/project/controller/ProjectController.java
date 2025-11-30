@@ -1,7 +1,7 @@
 package com.workhub.project.controller;
 
 import com.workhub.global.clientInfo.ClientInfo;
-import com.workhub.global.clientInfo.CllientInfoDto;
+import com.workhub.global.clientInfo.ClientInfoDto;
 import com.workhub.global.response.ApiResponse;
 import com.workhub.project.api.ProjectApi;
 import com.workhub.project.dto.CreateProjectRequest;
@@ -31,7 +31,7 @@ public class ProjectController implements ProjectApi {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<ProjectResponse>> createProject(@RequestBody CreateProjectRequest projectRequest,
-                                                                      @Parameter(hidden = true) @ClientInfo CllientInfoDto clientInfoDto,
+                                                                      @Parameter(hidden = true) @ClientInfo ClientInfoDto clientInfoDto,
                                                                       @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         Long userId = userDetails.getUserId();

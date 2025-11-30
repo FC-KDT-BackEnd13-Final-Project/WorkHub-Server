@@ -1,7 +1,7 @@
 package com.workhub.project.api;
 
 import com.workhub.global.clientInfo.ClientInfo;
-import com.workhub.global.clientInfo.CllientInfoDto;
+import com.workhub.global.clientInfo.ClientInfoDto;
 import com.workhub.global.response.ApiResponse;
 import com.workhub.project.dto.CreateProjectRequest;
 import com.workhub.project.dto.ProjectResponse;
@@ -51,7 +51,7 @@ public interface ProjectApi {
             @RequestBody CreateProjectRequest projectRequest,
 
             @Parameter(hidden = true)
-            @ClientInfo CllientInfoDto clientInfoDto,
+            @ClientInfo ClientInfoDto clientInfoDto,
 
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails userDetails

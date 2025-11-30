@@ -25,6 +25,6 @@ public class ClientInfoArgumentResolver implements HandlerMethodArgumentResolver
         String ip = RequestUtil.getClientIp(request);
         String userAgent = RequestUtil.getUserAgent(request);
 
-        return new CllientInfoDto(ip,userAgent);
+        return new ClientInfoDto(ip,userAgent);
     }
 }
