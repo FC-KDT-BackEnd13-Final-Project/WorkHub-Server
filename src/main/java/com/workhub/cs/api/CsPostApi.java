@@ -4,6 +4,7 @@ import com.workhub.cs.dto.CsPostRequest;
 import com.workhub.cs.dto.CsPostResponse;
 import com.workhub.cs.dto.CsPostUpdateRequest;
 import com.workhub.global.response.ApiResponse;
+import com.workhub.userTable.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,7 +45,8 @@ public interface CsPostApi {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ApiResponse<CsPostResponse> createCsPost(
             @PathVariable Long projectId,
-            @Valid @RequestBody CsPostRequest csPostRequest
+            @Valid @RequestBody CsPostRequest csPostRequest,
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
     @Operation(
@@ -68,6 +71,7 @@ public interface CsPostApi {
     ApiResponse<CsPostResponse> updateCsPost(
             @PathVariable Long projectId,
             @PathVariable Long csPostId,
-            @Valid @RequestBody CsPostUpdateRequest csPostUpdateRequest
+            @Valid @RequestBody CsPostUpdateRequest csPostUpdateRequest,
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 }
