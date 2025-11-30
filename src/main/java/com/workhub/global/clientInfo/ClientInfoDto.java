@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class CllientInfoDto {
+public class ClientInfoDto {
 
     private String ipAddress;
     private String userAgent;
