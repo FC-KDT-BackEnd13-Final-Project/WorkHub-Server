@@ -1,6 +1,7 @@
 package com.workhub.project.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -11,15 +12,15 @@ public record CreateProjectRequest(
         String projectName,
         @NotBlank(message = "프로젝트 설명은 빈값일 수 없습니다.")
         String projectDescription,
-        @NotBlank
+        @NotEmpty
         Long company,
-        @NotBlank
+        @NotEmpty
         List<Long> managerNames,
-        @NotBlank
+        @NotEmpty
         List<Long> developerNames,
-        @NotBlank
+        @NotEmpty
         LocalDate starDate,
-        @NotBlank
+        @NotEmpty
         LocalDate endDate
 ) {
 }
