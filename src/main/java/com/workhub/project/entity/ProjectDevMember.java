@@ -36,4 +36,13 @@ public class ProjectDevMember {
     @Column(name = "project_id")
     private Long projectId;
 
+    public static ProjectDevMember of(Long userId, Long projectId) {
+        return ProjectDevMember.builder()
+                .assignedAt(LocalDateTime.now())
+                .devPart(DevPart.BE)   // todo : 추후 프론트에서 어떻게 값을 전달할지 결정해야 합니다.
+                .userId(userId)
+                .projectId(projectId)
+                .build();
+    }
+
 }
