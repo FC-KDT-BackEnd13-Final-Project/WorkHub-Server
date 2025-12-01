@@ -7,6 +7,7 @@ import com.workhub.cs.dto.CsPostUpdateRequest;
 import com.workhub.cs.entity.CsPost;
 import com.workhub.cs.repository.CsPostFileRepository;
 import com.workhub.cs.repository.CsPostRepository;
+import com.workhub.global.error.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
@@ -179,5 +181,35 @@ public class CsPostServiceTest {
         assertThat(savedEntity.getContent()).isEqualTo("수정 완료");
 
         verify(csPostRepository).findById(csPostId);
+    }
+
+    @Test
+    void givenDeleteCsPost_whenDelete_thenSuccess() {
+        // given
+        Long projectId = 1L;
+        Long csPostId = 1L;
+
+        when(csPostRepository.findById(csPostId)).thenReturn(Optional.of(mockSaved));
+
+        // when
+        csPostService.delete(projectId, csPostId);
+
+        // then
+        assertThat(mockSaved.getDeletedAt()).isNotNull();
+        verify(csPostRepository).findById(csPostId);
+
+    }
+
+    @Test
+    void givenNotExistsCsPost_whenDelete_thenThrowNotFound() {
+        // given
+        Long projectId = 1L;
+        Long csPostId = 1L;
+
+        when(csPostRepository.findById(csPostId)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> csPostService.delete(projectId, csPostId))
+                .isInstanceOf(BusinessException.class);
     }
 }
