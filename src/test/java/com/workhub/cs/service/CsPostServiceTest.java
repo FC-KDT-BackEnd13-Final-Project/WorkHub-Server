@@ -221,6 +221,7 @@ public class CsPostServiceTest {
                 .isInstanceOf(BusinessException.class);
     }
 
+    @Test
     @DisplayName("게시글 작성자가 아닌 사용자가 수정하려고 하면 FORBIDDEN_CS_POST_UPDATE 예외가 발생한다.")
     void givenDifferentUser_whenUpdate_thenThrowForbidden() {
         // given
@@ -250,6 +251,60 @@ public class CsPostServiceTest {
 
         verify(csPostRepository).findById(csPostId);
         verify(csPostRepository, never()).save(any(CsPost.class));
+
+    }
+
+    @Test
+    @DisplayName("CS POST 게시글 상세 조회한다.")
+    void givenCsPostId_whenGetCsPost_thenSuccess() {
+        // given
+        Long csPostId = 1L;
+        Long projectId = 1L;
+
+        when(csPostRepository.findById(csPostId)).thenReturn(Optional.of(mockSaved));
+
+        // when
+        CsPostResponse response = csPostService.findCsPost(projectId, csPostId);
+
+        // then
+        verify(csPostRepository).findById(csPostId);
+        assertThat(response.content()).isEqualTo("문의 내용");
+        assertThat(response.title()).isEqualTo("문의 제목");
+
+    }
+
+    @Test
+    @DisplayName("다른 프로젝트의 CS POST 조회 시 예외 발생")
+    void givenWrongProjectId_whenGetCsPost_thenThrow() {
+        // given
+        Long csPostId = 1L;
+        Long projectId = 999L; // 잘못된 projectId
+
+        CsPost mockSaved = CsPost.builder()
+                .csPostId(csPostId)
+                .title("문의 제목")
+                .content("문의 내용")
+                .projectId(1L)
+                .userId(1L)
+                .csPostStatus(CsPostStatus.RECEIVED)
+                .build();
+
+        when(csPostRepository.findById(csPostId)).thenReturn(Optional.of(mockSaved));
+
+        // when & then
+        assertThatThrownBy(() -> csPostService.findCsPost(projectId, csPostId))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.NOT_MATCHED_PROJECT_CS_POST.getMessage());
+    }
+
+    @Test
+    @DisplayName("CS POST 게시글 목록을 조회한다.")
+    void t2() {
+        // given
+
+        // when
+
+        // then
 
     }
 }

@@ -14,7 +14,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -87,8 +86,7 @@ public class CsPostService {
      */
     public Long delete(Long projectId, Long csPostId) {
 
-        CsPost csPost = csPostRepository.findById(csPostId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXISTS_CS_POST));
+        CsPost csPost = getAndValidatePost(projectId, csPostId);
 
         if (csPost.isDeleted()) {
             throw new BusinessException(ErrorCode.ALREADY_DELETED_CS_POST);
@@ -98,6 +96,13 @@ public class CsPostService {
         csPost.markDeleted();
 
         return csPost.getCsPostId();
+    }
+
+    public CsPostResponse findCsPost(Long projectId, Long csPostId) {
+
+        CsPost csPost = getAndValidatePost(projectId, csPostId);
+
+        return null;
     }
 
     /**
