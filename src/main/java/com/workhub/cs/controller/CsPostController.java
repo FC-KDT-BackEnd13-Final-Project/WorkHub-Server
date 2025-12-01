@@ -85,6 +85,13 @@ public class CsPostController implements CsPostApi {
         return ApiResponse.success(csPostService.delete(projectId, csPostId));
     }
 
+    /**
+     * 프로젝트 CS POST 상태 값을 변경한다.
+     * @param projectId
+     * @param csPostId
+     * @param status
+     * @return
+     */
     @Override
     @PreAuthorize("hasAnyRole('DEVELOPER', 'ADMIN')")
     @PatchMapping("/{csPostId}/status")
