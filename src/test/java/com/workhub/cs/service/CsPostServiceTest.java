@@ -5,6 +5,7 @@ import com.workhub.cs.dto.CsPostRequest;
 import com.workhub.cs.dto.CsPostResponse;
 import com.workhub.cs.dto.CsPostUpdateRequest;
 import com.workhub.cs.entity.CsPost;
+import com.workhub.cs.entity.CsPostStatus;
 import com.workhub.cs.repository.CsPostFileRepository;
 import com.workhub.cs.repository.CsPostRepository;
 import com.workhub.global.error.ErrorCode;
@@ -190,6 +191,37 @@ public class CsPostServiceTest {
     }
 
     @Test
+    @DisplayName("CS POST 게시글이 정상적으로 삭제된다.")
+    void givenDeleteCsPost_whenDelete_thenSuccess() {
+        // given
+        Long projectId = 1L;
+        Long csPostId = 1L;
+
+        when(csPostRepository.findById(csPostId)).thenReturn(Optional.of(mockSaved));
+
+        // when
+        csPostService.delete(projectId, csPostId);
+
+        // then
+        assertThat(mockSaved.getDeletedAt()).isNotNull();
+        verify(csPostRepository).findById(csPostId);
+
+    }
+
+    @Test
+    @DisplayName("CS POST 게시글 삭제시 예외 처리")
+    void givenNotExistsCsPost_whenDelete_thenThrowNotFound() {
+        // given
+        Long projectId = 1L;
+        Long csPostId = 1L;
+
+        when(csPostRepository.findById(csPostId)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> csPostService.delete(projectId, csPostId))
+                .isInstanceOf(BusinessException.class);
+    }
+
     @DisplayName("게시글 작성자가 아닌 사용자가 수정하려고 하면 FORBIDDEN_CS_POST_UPDATE 예외가 발생한다.")
     void givenDifferentUser_whenUpdate_thenThrowForbidden() {
         // given
@@ -219,5 +251,72 @@ public class CsPostServiceTest {
 
         verify(csPostRepository).findById(csPostId);
         verify(csPostRepository, never()).save(any(CsPost.class));
+
+    }
+
+    @Test
+    @DisplayName("CS 게시글의 진행 상태를 변경한다.")
+    void givenStatus_whenStatusUpdate_thenSuccess() {
+        // given
+        CsPostStatus status = CsPostStatus.RECEIVED;
+
+        CsPost mockSaved = CsPost.builder()
+                .csPostId(1L)
+                .title("title")
+                .content("content")
+                .projectId(1L)
+                .userId(1L)
+                .csPostStatus(CsPostStatus.RECEIVED)
+                .build();
+
+        when(csPostRepository.findById(1L)).thenReturn(Optional.of(mockSaved));
+
+        // when
+        csPostService.changeStatus(1L, 1L, status);
+
+        // then
+        assertThat(mockSaved.getCsPostStatus()).isEqualTo(status);
+        verify(csPostRepository).findById(1L);
+        verify(csPostRepository, never()).save(any(CsPost.class));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 CS 게시글 상태 변경 시 예외 발생")
+    void givenInvalidPostId_whenStatusUpdate_thenThrowException() {
+        // given
+        when(csPostRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> csPostService.changeStatus(1L, 1L, CsPostStatus.RECEIVED))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.NOT_EXISTS_CS_POST.getMessage());
+
+        verify(csPostRepository).findById(1L);
+        verify(csPostRepository, never()).save(any(CsPost.class));
+    }
+
+    @Test
+    @DisplayName("상태를 정상 변경하면 변경된 상태를 반환한다.")
+    void givenStatus_whenChangeStatus_thenReturnUpdatedStatus() {
+        // given
+        CsPost mockSaved = CsPost.builder()
+                .csPostId(1L)
+                .title("title")
+                .content("content")
+                .projectId(1L)
+                .userId(1L)
+                .csPostStatus(CsPostStatus.RECEIVED)
+                .build();
+
+        when(csPostRepository.findById(1L)).thenReturn(Optional.of(mockSaved));
+
+        // when
+        CsPostStatus result = csPostService.changeStatus(1L, 1L, CsPostStatus.COMPLETED);
+
+        // then
+        assertThat(result).isEqualTo(CsPostStatus.COMPLETED);
+        assertThat(mockSaved.getCsPostStatus()).isEqualTo(CsPostStatus.COMPLETED);
+        verify(csPostRepository).findById(1L);
+        verify(csPostRepository, never()).save(any());
     }
 }

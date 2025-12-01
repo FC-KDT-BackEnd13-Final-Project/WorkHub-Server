@@ -12,7 +12,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Getter
@@ -28,14 +27,15 @@ public class CsPost extends BaseTimeEntity {
     @Column(name = "cs_post_id")
     private Long csPostId;
 
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
     @Column(name = "title", length = 100)
     private String title;
 
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cs_post_status")
+    private CsPostStatus csPostStatus;
 
     @Column(name = "project_id")
     private Long projectId;
@@ -67,7 +67,7 @@ public class CsPost extends BaseTimeEntity {
     }
 
     public void markDeleted() {
-        this.deletedAt = LocalDateTime.now();
+        markDeletedNow();
     }
 
     public void updateContent(String newContent) {
@@ -83,7 +83,8 @@ public class CsPost extends BaseTimeEntity {
         }
     }
 
-    public boolean isDeleted() {
-        return this.deletedAt != null;
+    public void changeStatus(CsPostStatus newStatus) {
+        this.csPostStatus = newStatus;
     }
+
 }
