@@ -13,14 +13,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Optional;
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(SpringExtension.class)
 public class PostServiceTest {
@@ -36,7 +44,6 @@ public class PostServiceTest {
                 "title", PostType.NOTICE, "content", "11.1.1",1L, HashTag.DESIGN
         );
         given(postRepository.existsByPostIdAndDeletedAtIsNull(1L)).willReturn(false);
-        given(postRepository.existsByPostIdIncludingDeleted(1L)).willReturn(false);
 
         assertThatThrownBy(() -> postService.create(request))
                 .isInstanceOf(BusinessException.class)
@@ -50,11 +57,10 @@ public class PostServiceTest {
                 "title", PostType.NOTICE, "content", "11.1.1",1L, HashTag.DESIGN
         );
         given(postRepository.existsByPostIdAndDeletedAtIsNull(1L)).willReturn(false);
-        given(postRepository.existsByPostIdIncludingDeleted(1L)).willReturn(true);
 
         assertThatThrownBy(() -> postService.create(request))
                 .isInstanceOf(BusinessException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ALREADY_DELETED_POST);
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PARENT_POST_NOT_FOUND);
     }
 
     @Test
@@ -116,7 +122,6 @@ public class PostServiceTest {
     @DisplayName("삭제 대상 게시글이 없으면 예외를 던진다")
     void delete_withPostNotFound_shouldThrow() {
         given(postRepository.findByPostIdAndDeletedAtIsNull(99L)).willReturn(Optional.empty());
-        given(postRepository.existsByPostIdIncludingDeleted(99L)).willReturn(false);
 
         assertThatThrownBy(() -> postService.delete(99L))
                 .isInstanceOf(BusinessException.class)
@@ -127,11 +132,10 @@ public class PostServiceTest {
     @DisplayName("이미 삭제된 게시글을 삭제하려 하면 예외를 던진다")
     void delete_withAlreadyDeletedPost_shouldThrow() {
         given(postRepository.findByPostIdAndDeletedAtIsNull(1L)).willReturn(Optional.empty());
-        given(postRepository.existsByPostIdIncludingDeleted(1L)).willReturn(true);
 
         assertThatThrownBy(() -> postService.delete(1L))
                 .isInstanceOf(BusinessException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ALREADY_DELETED_POST);
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
     }
 
     @Test
@@ -148,6 +152,32 @@ public class PostServiceTest {
         postService.delete(1L);
 
         assertThat(existing.isDeleted()).isTrue();
+    }
+
+    @Test
+    @DisplayName("검색 조건과 pageable 정보를 그대로 Repository에 전달한다")
+    void search_shouldDelegateToRepositoryWithSpecificationAndPageable() {
+        PageRequest pageable = PageRequest.of(1, 5);
+        Post post = Post.builder()
+                .postId(1L)
+                .title("title")
+                .content("content")
+                .type(PostType.NOTICE)
+                .hashtag(HashTag.DESIGN)
+                .build();
+        Page<Post> page = new PageImpl<>(List.of(post), pageable, 1);
+        given(postRepository.findAll(any(Specification.class), any(Pageable.class))).willReturn(page);
+
+
+        Page<Post> result = postService.search(1L, 2L, "title", PostType.NOTICE, HashTag.DESIGN, pageable);
+
+        assertThat(result.getContent()).isNotNull();
+
+        ArgumentCaptor<Specification<Post>> specCaptor = ArgumentCaptor.forClass(Specification.class);
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(postRepository).findAll(specCaptor.capture(), pageableCaptor.capture());
+        assertThat(specCaptor.getValue()).isNotNull();
+        assertThat(pageableCaptor.getValue()).isEqualTo(pageable);
     }
 
 
