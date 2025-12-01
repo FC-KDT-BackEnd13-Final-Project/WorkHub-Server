@@ -52,8 +52,7 @@ public class PostService {
      * @throws BusinessException 게시글이 존재하지 않을 때
      */
     @Transactional
-    public Post update(Long postId, PostUpdateRequest request){
-        Post target = findById(postId);
+    public Post update(Post target, PostUpdateRequest request){
         target.update(request);
         return target;
     }
@@ -66,12 +65,7 @@ public class PostService {
      */
     @Transactional
     public void delete(Long postId){
-        Post target = postRepository.findById(postId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
-
-        if (target.isDeleted()) {
-            throw new BusinessException(ErrorCode.ALREADY_DELETED_POST);
-        }
+        Post target = findById(postId);
         target.markDeleted();
     }
 }

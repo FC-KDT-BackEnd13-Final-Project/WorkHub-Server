@@ -79,7 +79,8 @@ public class PostController implements PostApi {
                                                                 @PathVariable Long nodeId,
                                                                 @PathVariable Long postId,
                                                                 @Valid @RequestBody PostUpdateRequest request) {
-        Post updated = postService.update(postId, request);
+        Post target = postService.findById(postId);
+        Post updated = postService.update(target, request);
         return ApiResponse.success(PostResponse.from(updated), "게시물 수정에 성공했습니다.");
     }
 
