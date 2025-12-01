@@ -184,6 +184,7 @@ public class CsPostServiceTest {
     }
 
     @Test
+    @DisplayName("CS POST 게시글이 정상적으로 삭제된다.")
     void givenDeleteCsPost_whenDelete_thenSuccess() {
         // given
         Long projectId = 1L;
@@ -201,6 +202,7 @@ public class CsPostServiceTest {
     }
 
     @Test
+    @DisplayName("CS POST 게시글 삭제시 예외 처리")
     void givenNotExistsCsPost_whenDelete_thenThrowNotFound() {
         // given
         Long projectId = 1L;
