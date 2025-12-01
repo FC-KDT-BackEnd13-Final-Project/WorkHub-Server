@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -76,38 +75,23 @@ class UpdateCsPostServiceTest {
         CsPostUpdateRequest request =
                 new CsPostUpdateRequest("수정 제목", "수정 완료", List.of());
 
-        CsPost updated = CsPost.builder()
-                .csPostId(csPostId)
-                .projectId(projectId)
-                .userId(userId)
-                .title("수정 제목")
-                .content("수정 완료")
-                .build();
-
         when(csPostService.findById(csPostId))
                 .thenReturn(original);
 
-        when(csPostService.save(any(CsPost.class)))
-                .thenReturn(updated);
-
         when(csPostService.findFilesByCsPostId(csPostId))
                 .thenReturn(List.of());
-
-        ArgumentCaptor<CsPost> captor = ArgumentCaptor.forClass(CsPost.class);
 
         CsPostResponse result = updateCsPostService.update(projectId, csPostId, userId, request);
 
         assertThat(result.title()).isEqualTo("수정 제목");
         assertThat(result.content()).isEqualTo("수정 완료");
 
-        verify(csPostService).save(captor.capture());
-        CsPost savedEntity = captor.getValue();
-
-        assertThat(savedEntity.getTitle()).isEqualTo("수정 제목");
-        assertThat(savedEntity.getContent()).isEqualTo("수정 완료");
+        assertThat(original.getTitle()).isEqualTo("수정 제목");
+        assertThat(original.getContent()).isEqualTo("수정 완료");
 
         verify(projectService).validateCompletedProject(projectId);
         verify(csPostService).findById(csPostId);
+        verify(csPostService, never()).save(any(CsPost.class));
     }
 
     @Test
