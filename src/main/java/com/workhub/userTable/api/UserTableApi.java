@@ -6,6 +6,7 @@ import com.workhub.userTable.dto.UserPasswordResetDto;
 import com.workhub.userTable.dto.UserRegisterRecord;
 import com.workhub.userTable.dto.UserTableResponse;
 import com.workhub.global.security.CustomUserDetails;
+import com.workhub.userTable.dto.UserRoleUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -92,4 +93,36 @@ public interface UserTableApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류 (비밀번호 초기화 실패)")
     })
     ResponseEntity<ApiResponse<String>> resetPasswordByAdmin(Long userId, UserPasswordResetDto passwordResetDto);
+
+    @Operation(
+            summary = "회원 역할 변경",
+            description = "관리자가 특정 사용자의 권한을 변경합니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "역할 변경 성공",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = UserTableResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류 (역할 변경 실패)")
+    })
+    ResponseEntity<ApiResponse<UserTableResponse>> updateUserRole(Long userId, UserRoleUpdateRequest request);
+
+    @Operation(
+            summary = "회원 삭제",
+            description = "관리자가 회원 계정을 삭제합니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "삭제 성공",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류 (회원 삭제 실패)")
+    })
+    ResponseEntity<ApiResponse<Object>> deleteUser(Long userId);
 }
