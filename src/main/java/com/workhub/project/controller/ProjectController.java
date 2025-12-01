@@ -13,7 +13,6 @@ import com.workhub.userTable.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,7 +38,7 @@ public class ProjectController implements ProjectApi {
         log.info("userId : {}, requestIp : {}", userId, clientInfoDto.getIpAddress());
         ProjectResponse projectResponse = createProjectService.createProject(projectRequest, userId, clientInfoDto.getIpAddress(), clientInfoDto.getUserAgent());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(projectResponse, "프로젝트가 생성되었습니다."));
+        return ApiResponse.created(projectResponse, "프로젝트가 생성되었습니다.");
     }
 
     @PatchMapping("/{projectId}/status")
@@ -54,7 +53,6 @@ public class ProjectController implements ProjectApi {
         updateProjectStatusService.updateProjectStatus(projectId, request,
                 clientInfoDto.getIpAddress(), clientInfoDto.getUserAgent(), userDetails.getUserId());
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.success("", "상태 변경 성공"));
+        return ApiResponse.success("상태 변경 성공");
     }
 }
