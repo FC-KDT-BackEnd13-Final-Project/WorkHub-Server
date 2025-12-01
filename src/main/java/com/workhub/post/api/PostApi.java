@@ -1,167 +1,185 @@
-package com.workhub.post.api;
+package com.workhub.post.service;
 
-import com.workhub.global.response.ApiResponse;
+import com.workhub.global.error.ErrorCode;
+import com.workhub.global.error.exception.BusinessException;
 import com.workhub.post.entity.HashTag;
+import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostType;
 import com.workhub.post.record.request.PostRequest;
 import com.workhub.post.record.request.PostUpdateRequest;
-import com.workhub.post.record.response.PostPageResponse;
-import com.workhub.post.record.response.PostResponse;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import org.springdoc.core.annotations.ParameterObject;
+import com.workhub.post.repository.PostRepository;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.data.jpa.domain.Specification;
 
-@Tag(name = "게시물 관리", description = "프로젝트 단계별 게시물 CRUD API")
-@RequestMapping("/api/v1/projects/{projectId}/nodes/{nodeId}/posts")
-public interface PostApi {
+import java.util.Optional;
+import java.util.List;
 
-    @Operation(
-            summary = "게시물 작성",
-            description = "프로젝트 단계에서 새 게시물을 작성합니다.",
-            parameters = {
-                    @Parameter(name = "projectId", description = "프로젝트 식별자", in = ParameterIn.PATH, required = true),
-                    @Parameter(name = "nodeId", description = "프로젝트 단계 식별자", in = ParameterIn.PATH, required = true)
-            }
-    )
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "201",
-                    description = "게시물 작성 성공",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = PostResponse.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청 (필수 값 누락 또는 형식 오류)"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류 (게시물 저장 실패)")
-    })
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<ApiResponse<PostResponse>> createPost(
-            @PathVariable Long projectId,
-            @PathVariable Long nodeId,
-            @Valid @RequestBody PostRequest request
-    );
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
-    @Operation(
-            summary = "게시물 목록 조회",
-            description = "특정 프로젝트 단계의 모든 게시물을 조회합니다.",
-            parameters = {
-                    @Parameter(name = "projectId", description = "프로젝트 식별자", in = ParameterIn.PATH, required = true),
-                    @Parameter(name = "nodeId", description = "프로젝트 단계 식별자", in = ParameterIn.PATH, required = true),
-                    @Parameter(name = "keyword", description = "제목/내용 검색 키워드", in = ParameterIn.QUERY, required = false),
-                    @Parameter(name = "postType", description = "게시글 타입 필터", in = ParameterIn.QUERY, required = false),
-                    @Parameter(name = "hashTag", description = "해시태그 필터", in = ParameterIn.QUERY, required = false)
-            }
-    )
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "게시물 목록 조회 성공",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = PostPageResponse.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "게시물이 존재하지 않음"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류 (게시물 조회 실패)")
-    })
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<ApiResponse<PostPageResponse>> getPosts(
-            @PathVariable Long projectId,
-            @PathVariable Long nodeId,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) PostType postType,
-            @RequestParam(required = false) HashTag hashTag,
-            @ParameterObject @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
-    );
+@ExtendWith(SpringExtension.class)
+public class PostServiceTest {
+    @Mock
+    PostRepository postRepository;
+    @InjectMocks
+    PostService postService;
 
-    @Operation(
-            summary = "게시물 단건 조회",
-            description = "게시물 식별자로 단건 게시물을 조회합니다.",
-            parameters = {
-                    @Parameter(name = "projectId", description = "프로젝트 식별자", in = ParameterIn.PATH, required = true),
-                    @Parameter(name = "nodeId", description = "프로젝트 단계 식별자", in = ParameterIn.PATH, required = true),
-                    @Parameter(name = "postId", description = "게시물 식별자", in = ParameterIn.PATH, required = true)
-            }
-    )
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "게시물 조회 성공",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = PostResponse.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "게시물을 찾을 수 없음"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류 (게시물 조회 실패)")
-    })
-    @GetMapping(value = "/{postId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<ApiResponse<PostResponse>> getPost(
-            @PathVariable Long projectId,
-            @PathVariable Long nodeId,
-            @PathVariable Long postId
-    );
+    @Test
+    @DisplayName("부모 게시물이 없으면 예외를 던진다.")
+    void create_withParentNotFound_shouldThrow() {
+        PostRequest request = new PostRequest(
+                "title", PostType.NOTICE, "content", "11.1.1",1L, HashTag.DESIGN
+        );
+        given(postRepository.existsByPostIdAndDeletedAtIsNull(1L)).willReturn(false);
 
-    // PATCH 요청으로 제목/내용/분류/해시태그/IP를 수정
-    @Operation(
-            summary = "게시물 수정",
-            description = "게시물 식별자로 내용을 수정합니다.",
-            parameters = {
-                    @Parameter(name = "projectId", description = "프로젝트 식별자", in = ParameterIn.PATH, required = true),
-                    @Parameter(name = "nodeId", description = "프로젝트 단계 식별자", in = ParameterIn.PATH, required = true),
-                    @Parameter(name = "postId", description = "게시물 식별자", in = ParameterIn.PATH, required = true)
-            }
-    )
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "게시물 수정 성공",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = PostResponse.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "게시물을 찾을 수 없음"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류 (게시물 수정 실패)")
-    })
+        assertThatThrownBy(() -> postService.create(request))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PARENT_POST_NOT_FOUND);
+    }
 
-    @PatchMapping(value = "/{postId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<ApiResponse<PostResponse>> updatePost(
-            @PathVariable Long projectId,
-            @PathVariable Long nodeId,
-            @PathVariable Long postId,
-            @Valid @RequestBody PostUpdateRequest request
-    );
+    @Test
+    @DisplayName("부모 게시글이 이미 삭제된 경우 예외를 던진다")
+    void create_withDeletedParent_shouldThrowAlreadyDeleted() {
+        PostRequest request = new PostRequest(
+                "title", PostType.NOTICE, "content", "11.1.1",1L, HashTag.DESIGN
+        );
+        given(postRepository.existsByPostIdAndDeletedAtIsNull(1L)).willReturn(false);
 
-    @Operation(
-            summary = "게시물 삭제",
-            description = "게시물 식별자로 게시물을 삭제합니다.",
-            parameters = {
-                    @Parameter(name = "projectId", in = ParameterIn.PATH, required = true, description = "프로젝트 식별자"),
-                    @Parameter(name = "nodeId", in = ParameterIn.PATH, required = true, description = "프로젝트 단계 식별자"),
-                    @Parameter(name = "postId", in = ParameterIn.PATH, required = true, description = "게시물 식별자")
-            }
-    )
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "게시물 삭제 성공",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ApiResponse.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "게시물을 찾을 수 없음"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류 (게시물 삭제 실패)")
-    })
-    @DeleteMapping(value = "/{postId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<ApiResponse<Object>> deletePost(
-            @PathVariable Long projectId,
-            @PathVariable Long nodeId,
-            @PathVariable Long postId
-    );
+        assertThatThrownBy(() -> postService.create(request))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PARENT_POST_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("정상적으로 게시글을 생성하면 저장된 엔티티를 반환한다")
+    void create_success_shouldReturnSavedPost() {
+        Post saved = Post.builder()
+                .postId(10L)
+                .title("title")
+                .content("content")
+                .type(PostType.NOTICE)
+                .postIp("127.0.0.1")
+                .hashtag(HashTag.DESIGN)
+                .build();
+        given(postRepository.save(any(Post.class))).willReturn(saved);
+
+        PostRequest request = new PostRequest(
+                "title", PostType.NOTICE, "content", "127.0.0.1", null, HashTag.DESIGN
+        );
+
+        Post result = postService.create(request);
+
+        assertThat(result.getPostId()).isEqualTo(10L);
+        assertThat(result.getTitle()).isEqualTo("title");
+    }
+
+    @Test
+    @DisplayName("게시글을 수정하면 필드가 갱신된다")
+    void update_success_shouldChangeFields() {
+        Post origin = Post.builder()
+                .postId(1L)
+                .title("old")
+                .content("old")
+                .type(PostType.GENERAL)
+                .postIp("1.1.1.1")
+                .hashtag(HashTag.REQ_DEF)
+                .build();
+
+        PostUpdateRequest request = new PostUpdateRequest(
+                "new", PostType.NOTICE, "new content", "2.2.2.2", HashTag.DESIGN
+        );
+
+        Post result = postService.update(origin, request);
+
+        assertThat(result.getTitle()).isEqualTo("new");
+        assertThat(result.getPostIp()).isEqualTo("2.2.2.2");
+    }
+
+    @Test
+    @DisplayName("게시글 조회 시 존재하지 않으면 예외를 던진다")
+    void findById_withPostNotFound_shouldThrow() {
+        given(postRepository.findByPostIdAndDeletedAtIsNull(99L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postService.findById(99L))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("삭제 대상 게시글이 없으면 예외를 던진다")
+    void delete_withPostNotFound_shouldThrow() {
+        given(postRepository.findByPostIdAndDeletedAtIsNull(99L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postService.delete(99L))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("이미 삭제된 게시글을 삭제하려 하면 예외를 던진다")
+    void delete_withAlreadyDeletedPost_shouldThrow() {
+        given(postRepository.findByPostIdAndDeletedAtIsNull(1L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postService.delete(1L))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("게시글 삭제 성공 시 repository.delete가 호출된다")
+    void delete_success_shouldInvokeDelete() {
+        Post existing = Post.builder()
+                .postId(1L)
+                .title("title")
+                .content("content")
+                .type(PostType.NOTICE)
+                .build();
+        given(postRepository.findByPostIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(existing));
+
+        postService.delete(1L);
+
+        assertThat(existing.isDeleted()).isTrue();
+    }
+
+    @Test
+    @DisplayName("검색 조건과 pageable 정보를 그대로 Repository에 전달한다")
+    void search_shouldDelegateToRepositoryWithSpecificationAndPageable() {
+        PageRequest pageable = PageRequest.of(1, 5);
+        Post post = Post.builder()
+                .postId(1L)
+                .title("title")
+                .content("content")
+                .type(PostType.NOTICE)
+                .hashtag(HashTag.DESIGN)
+                .build();
+        Page<Post> page = new PageImpl<>(List.of(post), pageable, 1);
+        given(postRepository.findAll(any(Specification.class), any(Pageable.class))).willReturn(page);
+
+
+        Page<Post> result = postService.search(1L, 2L, "title", PostType.NOTICE, HashTag.DESIGN, pageable);
+
+        assertThat(result.getContent()).isNotNull();
+
+        ArgumentCaptor<Specification<Post>> specCaptor = ArgumentCaptor.forClass(Specification.class);
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(postRepository).findAll(specCaptor.capture(), pageableCaptor.capture());
+        assertThat(specCaptor.getValue()).isNotNull();
+        assertThat(pageableCaptor.getValue()).isEqualTo(pageable);
+    }
+
+
 
 }
