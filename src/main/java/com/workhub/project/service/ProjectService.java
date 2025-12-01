@@ -64,4 +64,12 @@ public class ProjectService {
     public void updateProjectHistory(ProjectHistory projectHistory){
         projectHistoryRepository.save(projectHistory);
     }
+
+    public Project validateCompletedProject(Long projectId) {
+        Project project = findProjectById(projectId);
+        if (!Status.COMPLETED.equals(project.getStatus())) {
+            throw new BusinessException(ErrorCode.INVALID_PROJECT_STATUS_FOR_CS_POST);
+        }
+        return project;
+    }
 }
