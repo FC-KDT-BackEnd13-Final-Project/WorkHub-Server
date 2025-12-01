@@ -186,7 +186,6 @@ public class UpdateCsPostService {
             csPost.updateContent(request.content());
         }
 
-        csPostService.save(csPost);
     }
 
     /**
