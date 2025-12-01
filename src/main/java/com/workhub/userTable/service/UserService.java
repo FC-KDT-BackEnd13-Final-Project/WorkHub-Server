@@ -6,7 +6,6 @@ import com.workhub.userTable.dto.UserRegisterRecord;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.userTable.repository.UserRepository;
-import com.workhub.userTable.entity.Status;
 import com.workhub.userTable.entity.UserTable;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -48,16 +47,11 @@ public class UserService {
         validateLoginId(record.loginId());
         validateEmail(record.email());
 
-        UserTable userTable = UserTable.builder()
-                .loginId(record.loginId())
-                .password(passwordEncoder.encode(record.password()))
-                .email(record.email())
-                .phone(record.phone())
-                .role(record.role())
-                .status(Status.ACTIVE)
-                .companyId(record.companyId())
-                .build();
-        
+        UserTable userTable = UserTable.from(
+                record,
+                passwordEncoder.encode(record.password())
+        );
+
         return userRepository.save(userTable);
     }
 

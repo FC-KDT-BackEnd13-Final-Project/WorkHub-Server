@@ -9,9 +9,8 @@ import com.workhub.userTable.entity.Status;
 import com.workhub.userTable.entity.UserRole;
 import com.workhub.userTable.entity.UserTable;
 import com.workhub.userTable.repository.UserRepository;
-import java.time.LocalDateTime;
-import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,15 +22,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -48,60 +45,149 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    @Test
-    @DisplayName("로그인에 성공하면 인증 객체를 반환한다")
-    void login_success() {
-        Authentication authentication = mock(Authentication.class);
-        given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .willReturn(authentication);
+    @Nested
+    @DisplayName("login")
+    class Login {
 
-        Authentication result = userService.login(new UserLoginRecord("admin", "password"));
+        @Test
+        @DisplayName("정상 인증에 성공하면 Authentication을 반환한다")
+        void success() {
+            Authentication authentication = mock(Authentication.class);
+            given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                    .willReturn(authentication);
 
-        assertThat(result).isSameAs(authentication);
-        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+            Authentication result = userService.login(new UserLoginRecord("admin", "Password!234"));
+
+            assertThat(result).isSameAs(authentication);
+            verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        }
+
+        @Test
+        @DisplayName("인증 매니저가 실패를 던지면 BusinessException을 발생시킨다")
+        void fail_invalidCredentials() {
+            given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                    .willThrow(new BadCredentialsException("bad"));
+
+            assertThatThrownBy(() -> userService.login(new UserLoginRecord("admin", "wrong")))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(ErrorCode.INVALID_LOGIN_CREDENTIALS);
+        }
     }
 
-    @Test
-    @DisplayName("로그인 인증에 실패하면 BusinessException이 발생한다")
-    void login_invalidCredentials() {
-        given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .willThrow(new BadCredentialsException("bad"));
+    @Nested
+    @DisplayName("getUserById")
+    class GetUserById {
+        @Test
+        @DisplayName("존재하는 사용자는 그대로 반환한다")
+        void success() {
+            UserTable user = sampleUser();
+            given(userRepository.findById(1L)).willReturn(Optional.of(user));
 
-        assertThatThrownBy(() -> userService.login(new UserLoginRecord("admin", "wrong")))
-                .isInstanceOf(BusinessException.class)
-                .extracting("errorCode")
-                .isEqualTo(ErrorCode.INVALID_LOGIN_CREDENTIALS);
+            UserTable result = userService.getUserById(1L);
 
-        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+            assertThat(result).isEqualTo(user);
+        }
+
+        @Test
+        @DisplayName("없는 사용자는 예외를 던진다")
+        void fail_notFound() {
+            given(userRepository.findById(5L)).willReturn(Optional.empty());
+
+            assertThatThrownBy(() -> userService.getUserById(5L))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(ErrorCode.USER_NOT_EXISTS);
+        }
     }
 
-    @Test
-    @DisplayName("ID로 사용자 조회 시 존재한다면 그대로 반환한다")
-    void getUserById_success() {
-        UserTable mockUser = sampleUser();
-        given(userRepository.findById(1L)).willReturn(Optional.of(mockUser));
+    @Nested
+    @DisplayName("register")
+    class Register {
 
-        UserTable found = userService.getUserById(1L);
+        @Test
+        @DisplayName("중복 검증 통과 시 암호화된 비밀번호로 저장한다")
+        void success() {
+            UserRegisterRecord record = registerRecord();
+            given(userRepository.existsByLoginId(record.loginId())).willReturn(false);
+            given(userRepository.existsByEmail(record.email())).willReturn(false);
+            given(passwordEncoder.encode(record.password())).willReturn("encoded");
+            given(userRepository.save(any(UserTable.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-        assertThat(found).isEqualTo(mockUser);
-        verify(userRepository).findById(1L);
+            UserTable saved = userService.register(record);
+
+            assertThat(saved.getLoginId()).isEqualTo(record.loginId());
+            assertThat(saved.getPassword()).isEqualTo("encoded");
+            assertThat(saved.getRole()).isEqualTo(record.role());
+            assertThat(saved.getStatus()).isEqualTo(Status.ACTIVE);
+            verify(userRepository).save(any(UserTable.class));
+        }
+
+        @Test
+        @DisplayName("로그인 아이디가 중복이면 즉시 예외")
+        void fail_duplicateLoginId() {
+            UserRegisterRecord record = registerRecord();
+            given(userRepository.existsByLoginId(record.loginId())).willReturn(true);
+
+            assertThatThrownBy(() -> userService.register(record))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(ErrorCode.ALREADY_REGISTERED_USER);
+
+            verify(userRepository, never()).existsByEmail(anyString());
+            verify(passwordEncoder, never()).encode(anyString());
+            verify(userRepository, never()).save(any(UserTable.class));
+        }
+
+        @Test
+        @DisplayName("이메일이 중복이면 저장하지 않고 예외")
+        void fail_duplicateEmail() {
+            UserRegisterRecord record = registerRecord();
+            given(userRepository.existsByLoginId(record.loginId())).willReturn(false);
+            given(userRepository.existsByEmail(record.email())).willReturn(true);
+
+            assertThatThrownBy(() -> userService.register(record))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(ErrorCode.ALREADY_EXISTS__EMAIL);
+
+            verify(passwordEncoder, never()).encode(anyString());
+            verify(userRepository, never()).save(any(UserTable.class));
+        }
     }
 
-    @Test
-    @DisplayName("ID로 사용자 조회 시 없으면 예외가 발생한다")
-    void getUserById_notFound() {
-        given(userRepository.findById(5L)).willReturn(Optional.empty());
+    @Nested
+    @DisplayName("resetPassword")
+    class ResetPassword {
 
-        assertThatThrownBy(() -> userService.getUserById(5L))
-                .isInstanceOf(BusinessException.class)
-                .extracting("errorCode")
-                .isEqualTo(ErrorCode.USER_NOT_EXISTS);
+        @Test
+        @DisplayName("새 비밀번호가 일치하면 암호화 후 업데이트한다")
+        void success() {
+            UserTable user = sampleUser();
+            given(userRepository.findById(1L)).willReturn(Optional.of(user));
+            given(passwordEncoder.encode("NewPass!234")).willReturn("encoded-new");
+
+            userService.resetPassword(1L, new UserPasswordResetDto("NewPass!234", "NewPass!234"));
+
+            assertThat(user.getPassword()).isEqualTo("encoded-new");
+            verify(passwordEncoder).encode("NewPass!234");
+        }
+
+        @Test
+        @DisplayName("비밀번호 확인이 다르면 예외")
+        void fail_mismatch() {
+            assertThatThrownBy(() -> userService.resetPassword(1L, new UserPasswordResetDto("a", "b")))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(ErrorCode.NOT_EQUAL_PASSWORD);
+
+            verify(userRepository, never()).findById(anyLong());
+            verify(passwordEncoder, never()).encode(anyString());
+        }
     }
 
-    @Test
-    @DisplayName("관리자가 회원을 등록하면 중복 검증 후 암호화된 비밀번호로 저장한다")
-    void register_success() {
-        UserRegisterRecord record = new UserRegisterRecord(
+    private UserRegisterRecord registerRecord() {
+        return new UserRegisterRecord(
                 "freshUser",
                 "Plain!234",
                 "fresh@workhub.com",
@@ -109,114 +195,17 @@ class UserServiceTest {
                 1L,
                 UserRole.CLIENT
         );
-
-        given(userRepository.existsByLoginId("freshUser")).willReturn(false);
-        given(userRepository.existsByEmail("fresh@workhub.com")).willReturn(false);
-        given(passwordEncoder.encode("Plain!234")).willReturn("encoded");
-        given(userRepository.save(any(UserTable.class))).willAnswer(invocation -> invocation.getArgument(0));
-
-        UserTable created = userService.register(record);
-
-        assertThat(created.getLoginId()).isEqualTo("freshUser");
-        assertThat(created.getPassword()).isEqualTo("encoded");
-        assertThat(created.getRole()).isEqualTo(UserRole.CLIENT);
-        assertThat(created.getStatus()).isEqualTo(Status.ACTIVE);
-        assertThat(created.getCompanyId()).isEqualTo(1L);
-
-        verify(passwordEncoder).encode("Plain!234");
-        verify(userRepository).save(any(UserTable.class));
-    }
-
-    @Test
-    @DisplayName("로그인 아이디가 중복이면 즉시 예외를 던지고 다음 검증을 하지 않는다")
-    void register_duplicateLoginId() {
-        UserRegisterRecord record = new UserRegisterRecord(
-                "duplicate",
-                "Plain!234",
-                "dup@workhub.com",
-                "01012345678",
-                1L,
-                UserRole.CLIENT
-        );
-
-        given(userRepository.existsByLoginId("duplicate")).willReturn(true);
-
-        assertThatThrownBy(() -> userService.register(record))
-                .isInstanceOf(BusinessException.class)
-                .extracting("errorCode")
-                .isEqualTo(ErrorCode.ALREADY_REGISTERED_USER);
-
-        verify(userRepository, never()).existsByEmail(anyString());
-        verify(userRepository, never()).save(any(UserTable.class));
-        verify(passwordEncoder, never()).encode(anyString());
-    }
-
-    @Test
-    @DisplayName("이메일이 중복이면 예외가 발생하며 암호화를 수행하지 않는다")
-    void register_duplicateEmail() {
-        UserRegisterRecord record = new UserRegisterRecord(
-                "freshUser",
-                "Plain!234",
-                "dup@workhub.com",
-                "01012345678",
-                1L,
-                UserRole.CLIENT
-        );
-
-        given(userRepository.existsByLoginId("freshUser")).willReturn(false);
-        given(userRepository.existsByEmail("dup@workhub.com")).willReturn(true);
-
-        assertThatThrownBy(() -> userService.register(record))
-                .isInstanceOf(BusinessException.class)
-                .extracting("errorCode")
-                .isEqualTo(ErrorCode.ALREADY_EXISTS__EMAIL);
-
-        verify(passwordEncoder, never()).encode(anyString());
-        verify(userRepository, never()).save(any(UserTable.class));
-    }
-
-    @Test
-    @DisplayName("비밀번호 재설정 요청이 성공하면 암호화된 비밀번호로 갱신된다")
-    void resetPassword_success() {
-        UserTable user = sampleUser();
-        UserPasswordResetDto resetDto = new UserPasswordResetDto("NewPass!234", "NewPass!234");
-
-        given(userRepository.findById(1L)).willReturn(Optional.of(user));
-        given(passwordEncoder.encode("NewPass!234")).willReturn("encoded-new");
-
-        userService.resetPassword(1L, resetDto);
-
-        assertThat(user.getPassword()).isEqualTo("encoded-new");
-        verify(passwordEncoder).encode("NewPass!234");
-        verify(userRepository).findById(1L);
-    }
-
-    @Test
-    @DisplayName("새 비밀번호와 확인 비밀번호가 다르면 예외를 던지고 저장하지 않는다")
-    void resetPassword_mismatch() {
-        UserPasswordResetDto resetDto = new UserPasswordResetDto("NewPass!234", "Mismatch!234");
-
-        assertThatThrownBy(() -> userService.resetPassword(1L, resetDto))
-                .isInstanceOf(BusinessException.class)
-                .extracting("errorCode")
-                .isEqualTo(ErrorCode.NOT_EQUAL_PASSWORD);
-
-        verify(userRepository, never()).findById(anyLong());
-        verify(passwordEncoder, never()).encode(anyString());
     }
 
     private UserTable sampleUser() {
-        return UserTable.builder()
-                .userId(1L)
-                .loginId("admin")
-                .password("encoded")
-                .email("admin@workhub.com")
-                .phone("01000000000")
-                .role(UserRole.ADMIN)
-                .status(Status.ACTIVE)
-                .companyId(1L)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        return UserTable.of(
+                "admin",
+                "encoded",
+                "admin@workhub.com",
+                "01000000000",
+                UserRole.ADMIN,
+                Status.ACTIVE,
+                1L
+        );
     }
 }
