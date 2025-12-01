@@ -28,7 +28,7 @@ public class PostService {
     public Post create(PostRequest request){
         Long parentPostId = request.parentPostId();
         if (parentPostId != null && !postRepository.existsByPostIdAndDeletedAtIsNull(parentPostId)) {
-            throw new BusinessException(ErrorCode.POST_NOT_FOUND);
+            throw new BusinessException(ErrorCode.PARENT_POST_NOT_FOUND);
         }
 
         return postRepository.save(Post.of(parentPostId, request));
@@ -66,6 +66,9 @@ public class PostService {
     @Transactional
     public void delete(Long postId){
         Post target = findById(postId);
+        if (target.isDeleted()) {
+            throw new BusinessException(ErrorCode.ALREADY_DELETED_POST);
+        }
         target.markDeleted();
     }
 }

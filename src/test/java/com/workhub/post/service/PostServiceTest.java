@@ -36,10 +36,25 @@ public class PostServiceTest {
                 "title", PostType.NOTICE, "content", "11.1.1",1L, HashTag.DESIGN
         );
         given(postRepository.existsByPostIdAndDeletedAtIsNull(1L)).willReturn(false);
+        given(postRepository.existsByPostIdIncludingDeleted(1L)).willReturn(false);
 
         assertThatThrownBy(() -> postService.create(request))
                 .isInstanceOf(BusinessException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PARENT_POST_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("부모 게시글이 이미 삭제된 경우 예외를 던진다")
+    void create_withDeletedParent_shouldThrowAlreadyDeleted() {
+        PostRequest request = new PostRequest(
+                "title", PostType.NOTICE, "content", "11.1.1",1L, HashTag.DESIGN
+        );
+        given(postRepository.existsByPostIdAndDeletedAtIsNull(1L)).willReturn(false);
+        given(postRepository.existsByPostIdIncludingDeleted(1L)).willReturn(true);
+
+        assertThatThrownBy(() -> postService.create(request))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ALREADY_DELETED_POST);
     }
 
     @Test
@@ -101,10 +116,22 @@ public class PostServiceTest {
     @DisplayName("삭제 대상 게시글이 없으면 예외를 던진다")
     void delete_withPostNotFound_shouldThrow() {
         given(postRepository.findByPostIdAndDeletedAtIsNull(99L)).willReturn(Optional.empty());
+        given(postRepository.existsByPostIdIncludingDeleted(99L)).willReturn(false);
 
         assertThatThrownBy(() -> postService.delete(99L))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("이미 삭제된 게시글을 삭제하려 하면 예외를 던진다")
+    void delete_withAlreadyDeletedPost_shouldThrow() {
+        given(postRepository.findByPostIdAndDeletedAtIsNull(1L)).willReturn(Optional.empty());
+        given(postRepository.existsByPostIdIncludingDeleted(1L)).willReturn(true);
+
+        assertThatThrownBy(() -> postService.delete(1L))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ALREADY_DELETED_POST);
     }
 
     @Test
