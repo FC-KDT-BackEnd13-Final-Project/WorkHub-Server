@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 @Tag(name = "사용자 인증 및 관리", description = "로그인 및 비밀번호 관리 API")
 public interface UserTableApi {
@@ -34,7 +35,7 @@ public interface UserTableApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패 (잘못된 자격 증명)"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류 (로그인 처리 실패)")
     })
-    ApiResponse<String> login(UserLoginRecord userLoginRecord, HttpServletRequest request);
+    ResponseEntity<ApiResponse<String>> login(UserLoginRecord userLoginRecord, HttpServletRequest request);
 
     @Operation(
             summary = "관리자 사용자 생성",
@@ -52,7 +53,7 @@ public interface UserTableApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이미 존재하는 로그인 아이디"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류 (사용자 생성 실패)")
     })
-    ApiResponse<UserTableResponse> register(UserRegisterRecord registerRecord);
+    ResponseEntity<ApiResponse<UserTableResponse>> register(UserRegisterRecord registerRecord);
 
     @Operation(
             summary = "사용자 비밀번호 재설정",
@@ -69,7 +70,7 @@ public interface UserTableApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류 (비밀번호 재설정 실패)")
     })
-    ApiResponse<String> updatePassword(CustomUserDetails userDetails, UserPasswordResetDto passwordUpdateDto);
+    ResponseEntity<ApiResponse<String>> updatePassword(CustomUserDetails userDetails, UserPasswordResetDto passwordUpdateDto);
 
     @Operation(
             summary = "관리자 비밀번호 초기화",
@@ -90,5 +91,5 @@ public interface UserTableApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류 (비밀번호 초기화 실패)")
     })
-    ApiResponse<String> resetPasswordByAdmin(Long userId, UserPasswordResetDto passwordResetDto);
+    ResponseEntity<ApiResponse<String>> resetPasswordByAdmin(Long userId, UserPasswordResetDto passwordResetDto);
 }

@@ -30,6 +30,7 @@ public class UserController implements UserTableApi {
     private final UserService userService;
 
     @PostMapping("/users/login")
+    @Override
     public ResponseEntity<ApiResponse<String>> login(@RequestBody UserLoginRecord userLoginRecord,
                                                      HttpServletRequest request) {
 
@@ -53,6 +54,7 @@ public class UserController implements UserTableApi {
 
     @PostMapping("/admin/users/add/user")
     @PreAuthorize("hasRole('ADMIN')")
+    @Override
     public ResponseEntity<ApiResponse<UserTableResponse>> register(@RequestBody @Valid UserRegisterRecord registerRecord) {
         UserTable createdUser = userService.register(registerRecord);
         return ApiResponse.created(UserTableResponse.from(createdUser), "관리자가 계정을 생성했습니다.");
@@ -61,7 +63,7 @@ public class UserController implements UserTableApi {
     @PatchMapping("/auth/passwordReset/confirm")
     @PreAuthorize("isAuthenticated()")
     @Override
-    public ApiResponse<String> updatePassword(@AuthenticationPrincipal CustomUserDetails userDetails,
+    public ResponseEntity<ApiResponse<String>> updatePassword(@AuthenticationPrincipal CustomUserDetails userDetails,
                                               @Valid @RequestBody UserPasswordResetDto passwordUpdateDto) {
         userService.resetPassword(userDetails.getUserId(), passwordUpdateDto);
         return ApiResponse.success("비밀번호 재설정 완료", "비밀번호 재설정 요청 성공");
@@ -70,7 +72,7 @@ public class UserController implements UserTableApi {
     @PatchMapping("/admin/users/{userId}/password/reset")
     @PreAuthorize("hasRole('ADMIN')")
     @Override
-    public ApiResponse<String> resetPasswordByAdmin(@PathVariable Long userId,
+    public ResponseEntity<ApiResponse<String>> resetPasswordByAdmin(@PathVariable Long userId,
                                                     @Valid @RequestBody UserPasswordResetDto passwordResetDto) {
         userService.resetPassword(userId, passwordResetDto);
         return ApiResponse.success("관리자 비밀번호 초기화 완료", "관리자가 비밀번호를 초기화했습니다.");
