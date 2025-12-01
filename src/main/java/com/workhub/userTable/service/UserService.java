@@ -3,6 +3,7 @@ package com.workhub.userTable.service;
 import com.workhub.userTable.dto.UserLoginRecord;
 import com.workhub.userTable.dto.UserPasswordResetDto;
 import com.workhub.userTable.dto.UserRegisterRecord;
+import com.workhub.userTable.entity.UserRole;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.userTable.repository.UserRepository;
@@ -63,6 +64,19 @@ public class UserService {
 
         UserTable userTable = getUserById(targetUserId);
         userTable.updatePassword(passwordEncoder.encode(passwordResetDto.newPassword()));
+    }
+
+    @Transactional
+    public UserTable updateRole(Long userId, UserRole role) {
+        UserTable userTable = getUserById(userId);
+        userTable.updateRole(role);
+        return userTable;
+    }
+
+    @Transactional
+    public void deleteUser(Long userId) {
+        UserTable userTable = getUserById(userId);
+        userRepository.delete(userTable);
     }
 
     private void validateLoginId(String loginId) {

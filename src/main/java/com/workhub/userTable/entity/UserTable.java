@@ -51,6 +51,10 @@ public class UserTable extends BaseTimeEntity {
         this.lastedAt = LocalDateTime.now();
     }
 
+    public void updateRole(UserRole newRole) {
+        this.role = newRole;
+    }
+
     public static UserTable of(
             String loginId,
             String encodedPassword,

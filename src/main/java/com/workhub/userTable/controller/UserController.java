@@ -9,6 +9,7 @@ import com.workhub.userTable.dto.UserTableResponse;
 import com.workhub.userTable.entity.UserTable;
 import com.workhub.global.security.CustomUserDetails;
 import com.workhub.userTable.service.UserService;
+import com.workhub.userTable.dto.UserRoleUpdateRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -76,5 +77,22 @@ public class UserController implements UserTableApi {
                                                     @Valid @RequestBody UserPasswordResetDto passwordResetDto) {
         userService.resetPassword(userId, passwordResetDto);
         return ApiResponse.success("관리자 비밀번호 초기화 완료", "관리자가 비밀번호를 초기화했습니다.");
+    }
+
+    @PatchMapping("/admin/users/{userId}/role")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public ResponseEntity<ApiResponse<UserTableResponse>> updateUserRole(@PathVariable Long userId,
+                                                                         @Valid @RequestBody UserRoleUpdateRequest request) {
+        UserTable updatedUser = userService.updateRole(userId, request.role());
+        return ApiResponse.success(UserTableResponse.from(updatedUser), "회원 역할이 변경되었습니다.");
+    }
+
+    @DeleteMapping("/admin/users/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public ResponseEntity<ApiResponse<Object>> deleteUser(@PathVariable Long userId) {
+        userService.deleteUser(userId);
+        return ApiResponse.success(null, "회원이 삭제되었습니다.");
     }
 }

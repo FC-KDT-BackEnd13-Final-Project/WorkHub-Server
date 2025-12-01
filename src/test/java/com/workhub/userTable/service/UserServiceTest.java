@@ -186,6 +186,38 @@ class UserServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("updateRole")
+    class UpdateRole {
+
+        @Test
+        @DisplayName("사용자 역할을 새 권한으로 변경한다")
+        void success() {
+            UserTable user = sampleUser();
+            given(userRepository.findById(1L)).willReturn(Optional.of(user));
+
+            UserTable result = userService.updateRole(1L, UserRole.CLIENT);
+
+            assertThat(result.getRole()).isEqualTo(UserRole.CLIENT);
+        }
+    }
+
+    @Nested
+    @DisplayName("deleteUser")
+    class DeleteUser {
+
+        @Test
+        @DisplayName("사용자를 삭제하면 레포지토리 delete가 호출된다")
+        void success() {
+            UserTable user = sampleUser();
+            given(userRepository.findById(1L)).willReturn(Optional.of(user));
+
+            userService.deleteUser(1L);
+
+            verify(userRepository).delete(user);
+        }
+    }
+
     private UserRegisterRecord registerRecord() {
         return new UserRegisterRecord(
                 "freshUser",
