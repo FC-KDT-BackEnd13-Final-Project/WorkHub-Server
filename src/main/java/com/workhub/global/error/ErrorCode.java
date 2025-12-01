@@ -51,7 +51,8 @@ public enum ErrorCode {
     INVALID_CS_POST_FILE_UPDATE(HttpStatus.BAD_REQUEST, "C-006", "잘못된 파일 업데이트 요청입니다."),
     INVALID_CS_POST_FILE_ORDER(HttpStatus.BAD_REQUEST, "C-007", "파일 순서(fileOrder)는 0 이상의 값이어야 합니다."),
     INVALID_FILE_UPDATE(HttpStatus.BAD_REQUEST, "C-008", "잘못된 파일 수정 요청입니다."),
-    ALREADY_DELETED_CS_POST(HttpStatus.BAD_REQUEST, "C-009", "이미 삭재된 CS 게시글입니다."),
+    FORBIDDEN_CS_POST_UPDATE(HttpStatus.FORBIDDEN, "C-009", "CS 게시글 수정 권한이 없습니다."),
+    ALREADY_DELETED_CS_POST(HttpStatus.BAD_REQUEST, "C-0010", "이미 삭재된 CS 게시글입니다."),
 
     // AWS S3
     // 파일 관련 에러
@@ -61,7 +62,17 @@ public enum ErrorCode {
     INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "F-004", "지원하지 않는 파일 형식입니다."),
     INVALID_FILE_NAME(HttpStatus.BAD_REQUEST, "F-005", "파일 이름이 누락되었습니다."),
     FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "F-006", "파일 크기가 제한을 초과했습니다."),
-    FILE_ACCESS_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "F-007", "파일 접근에 실패했습니다.");
+    FILE_ACCESS_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "F-007", "파일 접근에 실패했습니다."),
+
+    // 프로젝트
+    PROJECT_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PR-001", "프로젝트 저장에 실패했습니다."),
+    PROJECT_HISTORY_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PR-002", "프로젝트 히스토리 저장에 실패했습니다."),
+    CLIENT_MEMBER_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PR-003", "고객사 멤버 저장에 실패했습니다."),
+    DEV_MEMBER_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PR-004", "개발사 멤버 저장에 실패했습니다."),
+    CLIENT_MEMBER_HISTORY_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PR-005", "고객사 멤버 히스토리 저장에 실패했습니다."),
+    DEV_MEMBER_HISTORY_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PR-006", "개발사 멤버 히스토리 저장에 실패했습니다."),
+    PROJECT_NOT_FOUND(HttpStatus.BAD_REQUEST, "PR-007", "프로젝트를 찾을 수 없습니다."),
+    PROJECT_HISTORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "PR-008", "프로젝트 히스토리를 찾을 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String errorCode;
