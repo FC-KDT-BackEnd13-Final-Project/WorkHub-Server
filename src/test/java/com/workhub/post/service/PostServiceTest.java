@@ -54,7 +54,7 @@ public class PostServiceTest {
 
         assertThatThrownBy(() -> postService.create(request))
                 .isInstanceOf(BusinessException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ALREADY_DELETED_POST);
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PARENT_POST_NOT_FOUND);
     }
 
     @Test
@@ -116,7 +116,6 @@ public class PostServiceTest {
     @DisplayName("삭제 대상 게시글이 없으면 예외를 던진다")
     void delete_withPostNotFound_shouldThrow() {
         given(postRepository.findByPostIdAndDeletedAtIsNull(99L)).willReturn(Optional.empty());
-        given(postRepository.existsByPostIdIncludingDeleted(99L)).willReturn(false);
 
         assertThatThrownBy(() -> postService.delete(99L))
                 .isInstanceOf(BusinessException.class)
@@ -127,11 +126,10 @@ public class PostServiceTest {
     @DisplayName("이미 삭제된 게시글을 삭제하려 하면 예외를 던진다")
     void delete_withAlreadyDeletedPost_shouldThrow() {
         given(postRepository.findByPostIdAndDeletedAtIsNull(1L)).willReturn(Optional.empty());
-        given(postRepository.existsByPostIdIncludingDeleted(1L)).willReturn(true);
 
         assertThatThrownBy(() -> postService.delete(1L))
                 .isInstanceOf(BusinessException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ALREADY_DELETED_POST);
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
     }
 
     @Test

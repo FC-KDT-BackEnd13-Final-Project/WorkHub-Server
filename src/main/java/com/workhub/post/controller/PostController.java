@@ -69,7 +69,7 @@ public class PostController implements PostApi {
         /**
          * 검색 조건과 Pageable 정보를 기반으로 게시글 목록을 조회한다.
          */
-        Page<Post> page = postService.search(projectId, nodeId, keyword, postType, hashTag, pageable);
+        Page<Post> page = postService.search(nodeId, keyword, postType, hashTag, pageable);
         List<PostSummaryResponse> posts = page.getContent()
                 .stream()
                 .map(PostSummaryResponse::from)

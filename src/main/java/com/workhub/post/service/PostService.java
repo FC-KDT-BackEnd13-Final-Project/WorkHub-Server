@@ -46,7 +46,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Post> search(Long projectId, Long nodeId,
+    public Page<Post> search(Long nodeId,
                              String keyword,
                              PostType postType,
                              HashTag hashTag,
