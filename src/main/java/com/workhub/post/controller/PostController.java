@@ -50,7 +50,9 @@ public class PostController implements PostApi {
     @Override
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<ApiResponse<List<PostResponse>>> getPosts(@PathVariable Long projectId, @PathVariable Long nodeId) {
+    public ResponseEntity<ApiResponse<List<PostResponse>>> getPosts(
+            @PathVariable Long projectId,
+            @PathVariable Long nodeId) {
         List<PostResponse> responses = postService.findAll()
                 .stream()
                 .map(PostResponse::from)
