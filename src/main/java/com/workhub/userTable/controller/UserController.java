@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,9 +30,8 @@ public class UserController implements UserTableApi {
     private final UserService userService;
 
     @PostMapping("/users/login")
-    @Override
-    public ApiResponse<String> login(@RequestBody UserLoginRecord userLoginRecord,
-                                     HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<String>> login(@RequestBody UserLoginRecord userLoginRecord,
+                                                     HttpServletRequest request) {
 
         // 서비스에서 실제 인증 (authenticationManager.authenticate 호출)
         Authentication authentication = userService.login(userLoginRecord);
@@ -53,8 +53,7 @@ public class UserController implements UserTableApi {
 
     @PostMapping("/admin/users/add/user")
     @PreAuthorize("hasRole('ADMIN')")
-    @Override
-    public ApiResponse<UserTableResponse> register(@RequestBody @Valid UserRegisterRecord registerRecord) {
+    public ResponseEntity<ApiResponse<UserTableResponse>> register(@RequestBody @Valid UserRegisterRecord registerRecord) {
         UserTable createdUser = userService.register(registerRecord);
         return ApiResponse.created(UserTableResponse.from(createdUser), "관리자가 계정을 생성했습니다.");
     }
