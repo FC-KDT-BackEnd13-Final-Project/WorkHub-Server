@@ -3,14 +3,18 @@ package com.workhub.post.service;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.post.entity.Post;
+import com.workhub.post.entity.HashTag;
+import com.workhub.post.entity.PostType;
 import com.workhub.post.record.request.PostRequest;
 import com.workhub.post.record.request.PostUpdateRequest;
 import com.workhub.post.repository.PostRepository;
+import com.workhub.post.repository.PostSpecifications;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -36,14 +40,24 @@ public class PostService {
 
 
     @Transactional(readOnly = true)
-    public List<Post> findAll(){
-        return postRepository.findAll();
-    }
-
-    @Transactional(readOnly = true)
     public Post findById(Long id) {
         return postRepository.findByPostIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Post> search(Long nodeId,
+                             String keyword,
+                             PostType postType,
+                             HashTag hashTag,
+                             Pageable pageable) {
+        /** Specification 조합으로 프로젝트/검색 조건을 모두 반영한다. */
+        Specification<Post> spec = Specification.where(PostSpecifications.withProjectNode(nodeId))
+                .and(PostSpecifications.withKeyword(keyword))
+                .and(PostSpecifications.withPostType(postType))
+                .and(PostSpecifications.withHashTag(hashTag));
+
+        return postRepository.findAll(spec, pageable);
     }
 
     /**
