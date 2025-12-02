@@ -1,8 +1,10 @@
 package com.workhub.cs.dto;
 
 import com.workhub.cs.entity.CsPostStatus;
+import lombok.Builder;
 
-public record CsPostSearchType(
+@Builder
+public record CsPostSearchRequest(
         String searchValue,
         CsPostStatus csPostStatus
 ) {
