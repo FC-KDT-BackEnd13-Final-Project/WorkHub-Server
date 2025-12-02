@@ -4,6 +4,7 @@ import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.post.entity.Post;
 import com.workhub.post.record.request.PostRequest;
+import com.workhub.post.record.response.PostResponse;
 import com.workhub.project.service.ProjectService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +27,12 @@ public class CreatePostService {
      * @param request 게시글 생성 요청
      * @return 저장된 게시글
      */
-    public Post create(Long projectId, Long projectNodeId, Long userId, PostRequest request) {
+    public PostResponse create(Long projectId, Long projectNodeId, Long userId, PostRequest request) {
         projectService.validateCompletedProject(projectId);
         Long parentPostId = request.parentPostId();
         if (parentPostId != null && !postService.existsActivePost(parentPostId)) {
             throw new BusinessException(ErrorCode.PARENT_POST_NOT_FOUND);
         }
-        return postService.save(Post.of(projectNodeId, userId, parentPostId, request));
+        return PostResponse.from(postService.save(Post.of(projectNodeId, userId, parentPostId, request)));
     }
 }

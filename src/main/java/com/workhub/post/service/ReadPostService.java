@@ -5,12 +5,17 @@ import com.workhub.global.error.exception.BusinessException;
 import com.workhub.post.entity.HashTag;
 import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostType;
+import com.workhub.post.record.response.PostPageResponse;
+import com.workhub.post.record.response.PostResponse;
+import com.workhub.post.record.response.PostSummaryResponse;
 import com.workhub.project.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,12 +34,12 @@ public class ReadPostService {
      * @param postId 게시글 ID
      * @return 조회된 게시글
      */
-    public Post findById(Long projectId, Long nodeId, Long userId, Long postId) {
+    public PostResponse findById(Long projectId, Long nodeId, Long userId, Long postId) {
         ensureAuthenticated(userId);
         projectService.validateCompletedProject(projectId);
         Post post = postService.findById(postId);
         postService.validateNode(post, nodeId);
-        return post;
+        return PostResponse.from(post);
     }
 
     /**
@@ -49,16 +54,20 @@ public class ReadPostService {
      * @param pageable 페이징 정보
      * @return 검색 결과 페이지
      */
-    public Page<Post> search(Long projectId,
-                             Long nodeId,
-                             Long userId,
-                             String keyword,
-                             PostType postType,
-                             HashTag hashTag,
-                             Pageable pageable) {
+    public PostPageResponse search(Long projectId,
+                                   Long nodeId,
+                                   Long userId,
+                                   String keyword,
+                                   PostType postType,
+                                   HashTag hashTag,
+                                   Pageable pageable) {
         ensureAuthenticated(userId);
         projectService.validateCompletedProject(projectId);
-        return postService.search(nodeId, keyword, postType, hashTag, pageable);
+        Page<Post> page = postService.search(nodeId, keyword, postType, hashTag, pageable);
+        List<PostSummaryResponse> posts = page.getContent().stream()
+                .map(PostSummaryResponse::from)
+                .toList();
+        return PostPageResponse.of(posts, page);
     }
 
     /**

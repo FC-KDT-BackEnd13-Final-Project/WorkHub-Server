@@ -4,6 +4,7 @@ import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.post.entity.Post;
 import com.workhub.post.record.request.PostUpdateRequest;
+import com.workhub.post.record.response.PostResponse;
 import com.workhub.project.service.ProjectService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class UpdatePostService {
      * @param request 수정 요청
      * @return 수정된 게시글
      */
-    public Post update(Long projectId, Long nodeId, Long postId, Long userId, PostUpdateRequest request) {
+    public PostResponse update(Long projectId, Long nodeId, Long postId, Long userId, PostUpdateRequest request) {
         projectService.validateCompletedProject(projectId);
         Post target = postService.findById(postId);
         postService.validateNode(target, nodeId);
@@ -35,6 +36,6 @@ public class UpdatePostService {
             throw new BusinessException(ErrorCode.FORBIDDEN_POST_UPDATE);
         }
         target.update(request);
-        return target;
+        return PostResponse.from(target);
     }
 }

@@ -5,13 +5,11 @@ import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.response.ApiResponse;
 import com.workhub.post.api.PostApi;
 import com.workhub.post.entity.HashTag;
-import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostType;
 import com.workhub.post.record.request.PostRequest;
 import com.workhub.post.record.request.PostUpdateRequest;
 import com.workhub.post.record.response.PostPageResponse;
 import com.workhub.post.record.response.PostResponse;
-import com.workhub.post.record.response.PostSummaryResponse;
 import com.workhub.post.service.CreatePostService;
 import com.workhub.post.service.DeletePostService;
 import com.workhub.post.service.ReadPostService;
@@ -21,14 +19,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -55,8 +50,8 @@ public class PostController implements PostApi {
             @PathVariable Long nodeId,
             @Valid @RequestBody PostRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Post created = createPostService.create(projectId, nodeId, getUserId(userDetails), request);
-        return ApiResponse.created(PostResponse.from(created), "게시글이 생성되었습니다.");
+        PostResponse created = createPostService.create(projectId, nodeId, getUserId(userDetails), request);
+        return ApiResponse.created(created, "게시글이 생성되었습니다.");
     }
 
     /**
@@ -81,16 +76,7 @@ public class PostController implements PostApi {
         /**
          * 검색 조건과 Pageable 정보를 기반으로 게시글 목록을 조회한다.
          */
-        Page<Post> page = readPostService.search(projectId, nodeId, getUserId(userDetails), keyword, postType, hashTag, pageable);
-        List<PostSummaryResponse> posts = page.getContent()
-                .stream()
-                .map(PostSummaryResponse::from)
-                .toList();
-
-        /**
-         * 조회 결과를 응답 DTO로 변환한다.
-         */
-        PostPageResponse response = PostPageResponse.of(posts, page);
+        PostPageResponse response = readPostService.search(projectId, nodeId, getUserId(userDetails), keyword, postType, hashTag, pageable);
 
         return ApiResponse.success(response, "게시글 목록 조회에 성공했습니다.");
     }
@@ -101,7 +87,7 @@ public class PostController implements PostApi {
                                                              @PathVariable Long nodeId,
                                                              @PathVariable Long postId,
                                                              @AuthenticationPrincipal CustomUserDetails userDetails) {
-        PostResponse response = PostResponse.from(readPostService.findById(projectId, nodeId, getUserId(userDetails), postId));
+        PostResponse response = readPostService.findById(projectId, nodeId, getUserId(userDetails), postId);
         return ApiResponse.success(response, "게시글 조회에 성공했습니다.");
     }
 
@@ -116,8 +102,8 @@ public class PostController implements PostApi {
                                                                 @PathVariable Long postId,
                                                                 @Valid @RequestBody PostUpdateRequest request,
                                                                 @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Post updated = updatePostService.update(projectId, nodeId, postId, getUserId(userDetails), request);
-        return ApiResponse.success(PostResponse.from(updated), "게시물 수정에 성공했습니다.");
+        PostResponse updated = updatePostService.update(projectId, nodeId, postId, getUserId(userDetails), request);
+        return ApiResponse.success(updated, "게시물 수정에 성공했습니다.");
     }
 
     /**

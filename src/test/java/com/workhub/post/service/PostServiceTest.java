@@ -7,6 +7,7 @@ import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostType;
 import com.workhub.post.record.request.PostRequest;
 import com.workhub.post.record.request.PostUpdateRequest;
+import com.workhub.post.record.response.PostResponse;
 import com.workhub.post.repository.PostRepository;
 import com.workhub.project.entity.Project;
 import com.workhub.project.entity.Status;
@@ -92,10 +93,10 @@ public class PostServiceTest {
                 "title", PostType.NOTICE, "content", "127.0.0.1", null, HashTag.DESIGN
         );
 
-        Post result = createPostService.create(10L, 20L, 30L, request);
+        PostResponse result = createPostService.create(10L, 20L, 30L, request);
 
-        assertThat(result.getPostId()).isEqualTo(10L);
-        assertThat(result.getTitle()).isEqualTo("title");
+        assertThat(result.postId()).isEqualTo(10L);
+        assertThat(result.title()).isEqualTo("title");
     }
 
     @Test
@@ -119,10 +120,10 @@ public class PostServiceTest {
         given(projectService.validateCompletedProject(10L)).willReturn(mockProject(10L));
         given(postRepository.findByPostIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(origin));
 
-        Post result = updatePostService.update(10L, 20L, 1L, 30L, request);
+        PostResponse result = updatePostService.update(10L, 20L, 1L, 30L, request);
 
-        assertThat(result.getTitle()).isEqualTo("new");
-        assertThat(result.getPostIp()).isEqualTo("2.2.2.2");
+        assertThat(result.title()).isEqualTo("new");
+        assertThat(result.postIp()).isEqualTo("2.2.2.2");
     }
 
     @Test
