@@ -1,4 +1,7 @@
 package com.workhub.cs.repository.csQna;
 
-public interface CsQnaRepository {
+import com.workhub.cs.entity.CsQna;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CsQnaRepository extends JpaRepository<CsQna,Long> {
 }

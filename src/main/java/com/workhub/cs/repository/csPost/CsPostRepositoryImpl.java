@@ -1,4 +1,4 @@
-package com.workhub.cs.repository;
+package com.workhub.cs.repository.csPost;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
