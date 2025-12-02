@@ -2,7 +2,7 @@ package com.workhub.cs.repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.workhub.cs.dto.CsPostSearchRequest;
+import com.workhub.cs.dto.csPost.CsPostSearchRequest;
 import com.workhub.cs.entity.CsPost;
 import com.workhub.cs.entity.CsPostStatus;
 import com.workhub.cs.entity.QCsPost;
