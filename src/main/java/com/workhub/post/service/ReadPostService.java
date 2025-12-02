@@ -36,7 +36,7 @@ public class ReadPostService {
      */
     public PostResponse findById(Long projectId, Long nodeId, Long userId, Long postId) {
         ensureAuthenticated(userId);
-        projectService.validateCompletedProject(projectId);
+        projectService.validateProject(projectId);
         Post post = postService.findById(postId);
         postService.validateNode(post, nodeId);
         return PostResponse.from(post);
@@ -62,7 +62,7 @@ public class ReadPostService {
                                    HashTag hashTag,
                                    Pageable pageable) {
         ensureAuthenticated(userId);
-        projectService.validateCompletedProject(projectId);
+        projectService.validateProject(projectId);
         Page<Post> page = postService.search(nodeId, keyword, postType, hashTag, pageable);
         List<PostSummaryResponse> posts = page.getContent().stream()
                 .map(PostSummaryResponse::from)

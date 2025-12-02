@@ -29,7 +29,7 @@ public class UpdatePostService {
      * @return 수정된 게시글
      */
     public PostResponse update(Long projectId, Long nodeId, Long postId, Long userId, PostUpdateRequest request) {
-        projectService.validateCompletedProject(projectId);
+        projectService.validateProject(projectId);
         Post target = postService.findById(postId);
         postService.validateNode(target, nodeId);
         if (!target.getUserId().equals(userId)) {

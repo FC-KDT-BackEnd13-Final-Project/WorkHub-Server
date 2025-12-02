@@ -25,7 +25,7 @@ public class DeletePostService {
      * @param userId 요청자 ID
      */
     public void delete(Long projectId, Long nodeId, Long postId, Long userId) {
-        projectService.validateCompletedProject(projectId);
+        projectService.validateProject(projectId);
         Post target = postService.findById(postId);
         postService.validateNode(target, nodeId);
         if (target.isDeleted()) {

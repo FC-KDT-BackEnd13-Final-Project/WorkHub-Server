@@ -54,7 +54,7 @@ public class PostServiceTest {
                 "title", PostType.NOTICE, "content", "11.1.1",1L, HashTag.DESIGN
         );
         given(postRepository.existsByPostIdAndDeletedAtIsNull(1L)).willReturn(false);
-        given(projectService.validateCompletedProject(10L)).willReturn(mockProject(10L));
+        given(projectService.validateProject(10L)).willReturn(mockProject(10L));
 
         assertThatThrownBy(() -> createPostService.create(10L, 20L, 30L, request))
                 .isInstanceOf(BusinessException.class)
@@ -68,7 +68,7 @@ public class PostServiceTest {
                 "title", PostType.NOTICE, "content", "11.1.1",1L, HashTag.DESIGN
         );
         given(postRepository.existsByPostIdAndDeletedAtIsNull(1L)).willReturn(false);
-        given(projectService.validateCompletedProject(10L)).willReturn(mockProject(10L));
+        given(projectService.validateProject(10L)).willReturn(mockProject(10L));
 
         assertThatThrownBy(() -> createPostService.create(10L, 20L, 30L, request))
                 .isInstanceOf(BusinessException.class)
@@ -87,7 +87,7 @@ public class PostServiceTest {
                 .hashtag(HashTag.DESIGN)
                 .build();
         given(postRepository.save(any(Post.class))).willReturn(saved);
-        given(projectService.validateCompletedProject(10L)).willReturn(mockProject(10L));
+        given(projectService.validateProject(10L)).willReturn(mockProject(10L));
 
         PostRequest request = new PostRequest(
                 "title", PostType.NOTICE, "content", "127.0.0.1", null, HashTag.DESIGN
@@ -97,6 +97,19 @@ public class PostServiceTest {
 
         assertThat(result.postId()).isEqualTo(10L);
         assertThat(result.title()).isEqualTo("title");
+    }
+
+    @Test
+    @DisplayName("프로젝트 상태가 유효하지 않으면 게시글을 생성할 수 없다")
+    void create_withInvalidProjectStatus_shouldThrow() {
+        PostRequest request = new PostRequest(
+                "title", PostType.NOTICE, "content", "127.0.0.1", null, HashTag.DESIGN
+        );
+        given(projectService.validateProject(10L)).willThrow(new BusinessException(ErrorCode.INVALID_PROJECT_STATUS_FOR_POST));
+
+        assertThatThrownBy(() -> createPostService.create(10L, 20L, 30L, request))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_PROJECT_STATUS_FOR_POST);
     }
 
     @Test
@@ -117,7 +130,7 @@ public class PostServiceTest {
                 "new", PostType.NOTICE, "new content", "2.2.2.2", HashTag.DESIGN
         );
 
-        given(projectService.validateCompletedProject(10L)).willReturn(mockProject(10L));
+        given(projectService.validateProject(10L)).willReturn(mockProject(10L));
         given(postRepository.findByPostIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(origin));
 
         PostResponse result = updatePostService.update(10L, 20L, 1L, 30L, request);
@@ -144,12 +157,25 @@ public class PostServiceTest {
                 "new", PostType.NOTICE, "new content", "2.2.2.2", HashTag.DESIGN
         );
 
-        given(projectService.validateCompletedProject(10L)).willReturn(mockProject(10L));
+        given(projectService.validateProject(10L)).willReturn(mockProject(10L));
         given(postRepository.findByPostIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(origin));
 
         assertThatThrownBy(() -> updatePostService.update(10L, 20L, 1L, 99L, request))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN_POST_UPDATE);
+    }
+
+    @Test
+    @DisplayName("프로젝트 상태가 유효하지 않으면 게시글을 수정할 수 없다")
+    void update_withInvalidProjectStatus_shouldThrow() {
+        PostUpdateRequest request = new PostUpdateRequest(
+                "new", PostType.NOTICE, "new content", "2.2.2.2", HashTag.DESIGN
+        );
+        given(projectService.validateProject(10L)).willThrow(new BusinessException(ErrorCode.INVALID_PROJECT_STATUS_FOR_POST));
+
+        assertThatThrownBy(() -> updatePostService.update(10L, 20L, 1L, 30L, request))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_PROJECT_STATUS_FOR_POST);
     }
 
     @Test
@@ -165,7 +191,7 @@ public class PostServiceTest {
     @Test
     @DisplayName("삭제 대상 게시글이 없으면 예외를 던진다")
     void delete_withPostNotFound_shouldThrow() {
-        given(projectService.validateCompletedProject(10L)).willReturn(mockProject(10L));
+        given(projectService.validateProject(10L)).willReturn(mockProject(10L));
         given(postRepository.findByPostIdAndDeletedAtIsNull(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> deletePostService.delete(10L, 20L, 99L, 30L))
@@ -186,7 +212,7 @@ public class PostServiceTest {
                 .userId(30L)
                 .build();
         deleted.markDeleted();
-        given(projectService.validateCompletedProject(10L)).willReturn(mockProject(10L));
+        given(projectService.validateProject(10L)).willReturn(mockProject(10L));
         given(postRepository.findByPostIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(deleted));
 
         assertThatThrownBy(() -> deletePostService.delete(10L, 20L, 1L, 30L))
@@ -205,7 +231,7 @@ public class PostServiceTest {
                 .projectNodeId(20L)
                 .userId(30L)
                 .build();
-        given(projectService.validateCompletedProject(10L)).willReturn(mockProject(10L));
+        given(projectService.validateProject(10L)).willReturn(mockProject(10L));
         given(postRepository.findByPostIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(existing));
 
         deletePostService.delete(10L, 20L, 1L, 30L);
@@ -225,7 +251,7 @@ public class PostServiceTest {
                 .userId(30L)
                 .build();
 
-        given(projectService.validateCompletedProject(10L)).willReturn(mockProject(10L));
+        given(projectService.validateProject(10L)).willReturn(mockProject(10L));
         given(postRepository.findByPostIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(existing));
 
         assertThatThrownBy(() -> deletePostService.delete(10L, 20L, 1L, 99L))
@@ -233,11 +259,21 @@ public class PostServiceTest {
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN_POST_DELETE);
     }
 
+    @Test
+    @DisplayName("프로젝트 상태가 유효하지 않으면 게시글을 삭제할 수 없다")
+    void delete_withInvalidProjectStatus_shouldThrow() {
+        given(projectService.validateProject(10L)).willThrow(new BusinessException(ErrorCode.INVALID_PROJECT_STATUS_FOR_POST));
+
+        assertThatThrownBy(() -> deletePostService.delete(10L, 20L, 1L, 30L))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_PROJECT_STATUS_FOR_POST);
+    }
+
     private Project mockProject(Long projectId) {
         return Project.builder()
                 .projectId(projectId)
                 .projectTitle("project")
-                .status(Status.COMPLETED)
+                .status(Status.IN_PROGRESS)
                 .build();
     }
 }

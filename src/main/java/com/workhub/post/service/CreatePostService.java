@@ -28,7 +28,7 @@ public class CreatePostService {
      * @return 저장된 게시글
      */
     public PostResponse create(Long projectId, Long projectNodeId, Long userId, PostRequest request) {
-        projectService.validateCompletedProject(projectId);
+        projectService.validateProject(projectId);
         Long parentPostId = request.parentPostId();
         if (parentPostId != null && !postService.existsActivePost(parentPostId)) {
             throw new BusinessException(ErrorCode.PARENT_POST_NOT_FOUND);
