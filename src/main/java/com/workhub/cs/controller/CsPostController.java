@@ -52,7 +52,7 @@ public class CsPostController implements CsPostApi {
     }
 
     /**
-     * 프로젝트늬 CS 게시글 리스트를 조회한다.
+     * 프로젝트의 CS 게시글 리스트를 조회한다.
      *
      * @param projectId 프로젝트 식별자
      * @param pageable 페이징 정보
