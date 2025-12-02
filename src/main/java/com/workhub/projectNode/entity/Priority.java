@@ -11,8 +11,4 @@ public enum Priority {
         return Priority.valueOf(value.toUpperCase());
     }
 
-    @JsonCreator
-    public String to(String value) {
-        return this.name();
-    }
 }

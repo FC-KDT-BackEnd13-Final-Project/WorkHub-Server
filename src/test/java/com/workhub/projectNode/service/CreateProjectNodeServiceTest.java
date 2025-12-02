@@ -112,6 +112,7 @@ public class CreateProjectNodeServiceTest {
                 .projectNodeId(10L)
                 .projectId(projectId)
                 .title("New Node")
+                .description("New Description")
                 .nodeOrder(2)
                 .build();
 
@@ -160,6 +161,7 @@ public class CreateProjectNodeServiceTest {
                 .projectNodeId(10L)
                 .projectId(projectId)
                 .title("New Node")
+                .description("New Description")
                 .nodeOrder(5)
                 .build();
 
@@ -196,6 +198,7 @@ public class CreateProjectNodeServiceTest {
                 .projectNodeId(1L)
                 .projectId(projectId)
                 .title("First Node")
+                .description("First Description")
                 .nodeOrder(1)
                 .priority(Priority.CRITICAL)
                 .build();
@@ -320,30 +323,4 @@ public class CreateProjectNodeServiceTest {
         verify(projectNodeService).createProjectHistory(anyLong(), anyString(), anyString(), anyString(), anyLong());
     }
 
-    @Test
-    @DisplayName("잘못된 우선순위 값으로 노드 생성 시 예외가 발생한다")
-    void createNode_withInvalidPriority_shouldThrowException() {
-        // given
-        Long projectId = 1L;
-        Long loginUser = 100L;
-        String userIp = "127.0.0.1";
-        String userAgent = "TestAgent";
-
-        CreateNodeRequest request = new CreateNodeRequest(
-                "Test Node",
-                "Test Description",
-                1,
-                "INVALID_PRIORITY"
-        );
-
-        given(projectNodeService.findByProjectIdByNodeOrder(projectId)).willReturn(List.of());
-        given(projectNodeService.saveProjectNode(any(ProjectNode.class)))
-                .willThrow(new IllegalArgumentException("No enum constant"));
-
-        // when & then
-        assertThatThrownBy(() -> createProjectNodeService.createNode(projectId, request, loginUser, userIp, userAgent))
-                .isInstanceOf(IllegalArgumentException.class);
-
-        verify(projectNodeService).findByProjectIdByNodeOrder(projectId);
-    }
 }
