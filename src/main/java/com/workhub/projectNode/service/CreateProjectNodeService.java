@@ -1,5 +1,9 @@
 package com.workhub.projectNode.service;
 
+import com.workhub.global.context.RequestContext;
+import com.workhub.global.entity.ActionType;
+import com.workhub.global.entity.HistoryType;
+import com.workhub.global.history.HistoryRecorder;
 import com.workhub.projectNode.dto.CreateNodeRequest;
 import com.workhub.projectNode.dto.CreateNodeResponse;
 import com.workhub.projectNode.entity.ProjectNode;
@@ -17,6 +21,7 @@ import java.util.List;
 public class CreateProjectNodeService {
 
     private final ProjectNodeService projectNodeService;
+    private final HistoryRecorder historyRecorder;
 
     /**
      * 프로젝트 노드를 생성하고 관련 히스토리를 저장
@@ -72,9 +77,11 @@ public class CreateProjectNodeService {
                                                   Long loginUser, String userIp, String userAgent) {
 
         ProjectNode savedProjectNode = projectNodeService.saveProjectNode(ProjectNode.of(projectId, request));
-        projectNodeService.createNodeHistory(savedProjectNode.getProjectNodeId(), savedProjectNode.getDescription(),
-                userIp, userAgent, loginUser);
-        
+
+        RequestContext context = RequestContext.of(loginUser, userIp, userAgent);
+        historyRecorder.recordHistory(HistoryType.PROJECT_NODE, savedProjectNode.getProjectNodeId(), ActionType.CREATE,
+                savedProjectNode.getDescription(), null, context);
+
         return savedProjectNode;
     }
 }

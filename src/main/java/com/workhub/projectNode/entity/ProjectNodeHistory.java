@@ -1,5 +1,6 @@
 package com.workhub.projectNode.entity;
 
+import com.workhub.global.context.RequestContext;
 import com.workhub.global.entity.ActionType;
 import com.workhub.global.entity.BaseHistoryEntity;
 import jakarta.persistence.Entity;
@@ -18,17 +19,17 @@ import java.time.LocalDateTime;
 public class ProjectNodeHistory extends BaseHistoryEntity {
 
     public static ProjectNodeHistory of(Long targetId, ActionType actionType, String beforeData,
-                                    Long originalCreator, Long loginUser, String userIp, String userAgent) {
+                                    Long originalCreator, RequestContext context) {
 
         return ProjectNodeHistory.builder()
                 .targetId(targetId)
                 .actionType(actionType)
-                .beforeData(beforeData)  // todo : 아떤 데이터가 들어가야 할 지 상의해봐야 합니다.
+                .beforeData(beforeData)  // todo : 어떤 데이터가 들어가야 할 지 상의해봐야 합니다.
                 .createdBy(originalCreator)
-                .updatedBy(loginUser)
+                .updatedBy(context.userId())
                 .updatedAt(LocalDateTime.now())
-                .ipAddress(userIp)
-                .userAgent(userAgent)
+                .ipAddress(context.userIp())
+                .userAgent(context.userAgent())
                 .build();
     }
 }

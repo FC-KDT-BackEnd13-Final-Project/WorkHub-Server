@@ -1,5 +1,9 @@
 package com.workhub.project.service;
 
+import com.workhub.global.context.RequestContext;
+import com.workhub.global.entity.ActionType;
+import com.workhub.global.entity.HistoryType;
+import com.workhub.global.history.HistoryRecorder;
 import com.workhub.project.dto.CreateProjectRequest;
 import com.workhub.project.dto.ProjectResponse;
 import com.workhub.project.entity.*;
@@ -17,6 +21,7 @@ import java.util.List;
 public class CreateProjectService {
 
     private final ProjectService projectService;
+    private final HistoryRecorder historyRecorder;
 
     /**
      * 프로젝트를 생성하고 관련 히스토리 및 멤버 정보를 저장
@@ -45,8 +50,9 @@ public class CreateProjectService {
     private Project saveProjectAndHistory(CreateProjectRequest request, Long loginUser, String userIp, String userAgent) {
 
         Project savedProject = projectService.saveProject(Project.of(request));
-        ProjectHistory projectHistory = ProjectHistory.of(savedProject, loginUser, userIp, userAgent);
-        projectService.saveProjectHistory(projectHistory);
+        RequestContext context = RequestContext.of(loginUser, userIp, userAgent);
+        historyRecorder.recordHistory(HistoryType.PROJECT, savedProject.getProjectId(), ActionType.CREATE,
+                savedProject.getProjectDescription(), null, context);
 
         return savedProject;
     }
