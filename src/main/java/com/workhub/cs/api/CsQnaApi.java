@@ -1,7 +1,7 @@
 package com.workhub.cs.api;
 
 import com.workhub.cs.dto.csQna.CsQnaRequest;
-import com.workhub.cs.dto.csQna.CsQnsResponse;
+import com.workhub.cs.dto.csQna.CsQnaResponse;
 import com.workhub.global.response.ApiResponse;
 import com.workhub.userTable.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,14 +37,14 @@ public interface CsQnaApi {
                     responseCode = "201",
                     description = "CS 댓글 작성 성공",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = CsQnsResponse.class))
+                            schema = @Schema(implementation = CsQnaResponse.class))
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청 (예: 빈 내용, 다른 게시글의 부모 댓글)"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "게시글 또는 댓글을 찾을 수 없음"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<ApiResponse<CsQnsResponse>> create(
+    ResponseEntity<ApiResponse<CsQnaResponse>> create(
             @PathVariable Long projectId,
             @PathVariable Long csPostId,
             @Valid @RequestBody CsQnaRequest csQnaRequest,

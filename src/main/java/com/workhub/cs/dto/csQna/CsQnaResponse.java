@@ -4,7 +4,7 @@ import com.workhub.cs.entity.CsQna;
 
 import java.time.LocalDateTime;
 
-public record CsQnsResponse(
+public record CsQnaResponse(
         Long csQnaId,
         Long csPostId,
         Long userId,
@@ -13,8 +13,8 @@ public record CsQnsResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    public static CsQnsResponse from(CsQna csQna) {
-        return new CsQnsResponse(
+    public static CsQnaResponse from(CsQna csQna) {
+        return new CsQnaResponse(
                 csQna.getCsQnaId(),
                 csQna.getCsPostId(),
                 csQna.getUserId(),

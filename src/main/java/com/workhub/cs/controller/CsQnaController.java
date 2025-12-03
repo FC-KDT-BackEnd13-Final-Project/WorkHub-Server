@@ -2,7 +2,7 @@ package com.workhub.cs.controller;
 
 import com.workhub.cs.api.CsQnaApi;
 import com.workhub.cs.dto.csQna.CsQnaRequest;
-import com.workhub.cs.dto.csQna.CsQnsResponse;
+import com.workhub.cs.dto.csQna.CsQnaResponse;
 import com.workhub.cs.service.csQna.CreateCsQnaService;
 import com.workhub.global.response.ApiResponse;
 import com.workhub.userTable.security.CustomUserDetails;
@@ -30,13 +30,13 @@ public class CsQnaController implements CsQnaApi {
      */
     @Override
     @PostMapping
-    public ResponseEntity<ApiResponse<CsQnsResponse>> create(
+    public ResponseEntity<ApiResponse<CsQnaResponse>> create(
             @PathVariable Long projectId,
             @PathVariable Long csPostId,
             @RequestBody @Valid CsQnaRequest csQnaRequest,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        CsQnsResponse response = createCsQnaService.create(
+        CsQnaResponse response = createCsQnaService.create(
                 projectId, csPostId, userDetails.getUserId(), csQnaRequest);
 
         return ApiResponse.success(response, "CS Comment가 작성되었습니다.");

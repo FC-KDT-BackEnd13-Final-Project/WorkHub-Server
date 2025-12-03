@@ -1,7 +1,7 @@
 package com.workhub.cs.service.csQna;
 
 import com.workhub.cs.dto.csQna.CsQnaRequest;
-import com.workhub.cs.dto.csQna.CsQnsResponse;
+import com.workhub.cs.dto.csQna.CsQnaResponse;
 import com.workhub.cs.entity.CsQna;
 import com.workhub.cs.service.CsPostAccessValidator;
 import com.workhub.global.error.ErrorCode;
@@ -18,7 +18,7 @@ public class CreateCsQnaService {
     private final CsQnaService csQnaService;
     private final CsPostAccessValidator csPostAccessValidator;
 
-    public CsQnsResponse create(Long projectId, Long csPostId, Long userId, CsQnaRequest csQnaRequest) {
+    public CsQnaResponse create(Long projectId, Long csPostId, Long userId, CsQnaRequest csQnaRequest) {
 
         validateContent(csQnaRequest.qnaContent());
         csPostAccessValidator.validateProjectAndGetPost(projectId, csPostId);
@@ -27,7 +27,7 @@ public class CreateCsQnaService {
 
         CsQna csQna = CsQna.of(csPostId, userId, parentQnaId, csQnaRequest.qnaContent());
 
-        return CsQnsResponse.from(csQnaService.save(csQna));
+        return CsQnaResponse.from(csQnaService.save(csQna));
     }
 
     /**

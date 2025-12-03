@@ -1,7 +1,7 @@
 package com.workhub.cs.service.csQna;
 
 import com.workhub.cs.dto.csQna.CsQnaRequest;
-import com.workhub.cs.dto.csQna.CsQnsResponse;
+import com.workhub.cs.dto.csQna.CsQnaResponse;
 import com.workhub.cs.entity.CsPost;
 import com.workhub.cs.entity.CsQna;
 import com.workhub.cs.service.CsPostAccessValidator;
@@ -51,7 +51,7 @@ class CreateCsQnaServiceTest {
                 .thenReturn(CsPost.builder().csPostId(csPostId).projectId(projectId).userId(1L).title("t").content("c").build());
         when(csQnaService.save(any(CsQna.class))).thenReturn(saved);
 
-        CsQnsResponse response = createCsQnaService.create(projectId, csPostId, userId, request);
+        CsQnaResponse response = createCsQnaService.create(projectId, csPostId, userId, request);
 
         assertThat(response.csQnaId()).isEqualTo(saved.getCsQnaId());
         assertThat(response.qnaContent()).isEqualTo(saved.getQnaContent());
