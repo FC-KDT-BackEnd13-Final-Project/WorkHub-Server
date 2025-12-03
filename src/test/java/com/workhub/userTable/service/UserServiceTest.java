@@ -3,11 +3,13 @@ package com.workhub.userTable.service;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.userTable.dto.UserLoginRecord;
-import com.workhub.userTable.dto.UserPasswordResetDto;
+import com.workhub.userTable.dto.AdminPasswordResetRequest;
+import com.workhub.userTable.dto.UserPasswordChangeRequest;
 import com.workhub.userTable.dto.UserRegisterRecord;
 import com.workhub.userTable.entity.Status;
 import com.workhub.userTable.entity.UserRole;
 import com.workhub.userTable.entity.UserTable;
+import com.workhub.userTable.dto.UserTableResponse;
 import com.workhub.userTable.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -157,32 +159,71 @@ class UserServiceTest {
     }
 
     @Nested
-    @DisplayName("resetPassword")
-    class ResetPassword {
+    @DisplayName("changePassword")
+    class ChangePassword {
 
         @Test
-        @DisplayName("새 비밀번호가 일치하면 암호화 후 업데이트한다")
+        @DisplayName("현재 비밀번호가 맞으면 새 비밀번호로 변경된다")
         void success() {
             UserTable user = sampleUser();
             given(userRepository.findById(1L)).willReturn(Optional.of(user));
+            given(passwordEncoder.matches("Old!234", user.getPassword())).willReturn(true);
+            given(passwordEncoder.matches("NewPass!234", user.getPassword())).willReturn(false);
             given(passwordEncoder.encode("NewPass!234")).willReturn("encoded-new");
 
-            userService.resetPassword(1L, new UserPasswordResetDto("NewPass!234", "NewPass!234"));
+            userService.changePassword(1L, new UserPasswordChangeRequest("Old!234", "NewPass!234"));
 
             assertThat(user.getPassword()).isEqualTo("encoded-new");
             verify(passwordEncoder).encode("NewPass!234");
         }
 
         @Test
-        @DisplayName("비밀번호 확인이 다르면 예외")
-        void fail_mismatch() {
-            assertThatThrownBy(() -> userService.resetPassword(1L, new UserPasswordResetDto("a", "b")))
+        @DisplayName("현재 비밀번호가 다르면 예외")
+        void fail_invalidCurrentPassword() {
+            UserTable user = sampleUser();
+            given(userRepository.findById(1L)).willReturn(Optional.of(user));
+            given(passwordEncoder.matches("Wrong", user.getPassword())).willReturn(false);
+
+            assertThatThrownBy(() -> userService.changePassword(1L, new UserPasswordChangeRequest("Wrong", "New")))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorCode")
-                    .isEqualTo(ErrorCode.NOT_EQUAL_PASSWORD);
+                    .isEqualTo(ErrorCode.INVALID_LOGIN_CREDENTIALS);
 
-            verify(userRepository, never()).findById(anyLong());
             verify(passwordEncoder, never()).encode(anyString());
+        }
+
+        @Test
+        @DisplayName("새 비밀번호가 기존과 같으면 예외")
+        void fail_sameAsCurrent() {
+            UserTable user = sampleUser();
+            given(userRepository.findById(1L)).willReturn(Optional.of(user));
+            given(passwordEncoder.matches("Old!234", user.getPassword())).willReturn(true);
+            given(passwordEncoder.matches("Old!234", user.getPassword())).willReturn(true);
+
+            assertThatThrownBy(() -> userService.changePassword(1L, new UserPasswordChangeRequest("Old!234", "Old!234")))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(ErrorCode.INVALID_LOGIN_CREDENTIALS);
+
+            verify(passwordEncoder, never()).encode(anyString());
+        }
+    }
+
+    @Nested
+    @DisplayName("resetPasswordByAdmin")
+    class ResetPasswordByAdmin {
+
+        @Test
+        @DisplayName("관리자가 새 비밀번호를 설정하면 암호화 후 저장된다")
+        void success() {
+            UserTable user = sampleUser();
+            given(userRepository.findById(1L)).willReturn(Optional.of(user));
+            given(passwordEncoder.encode("NewPass!234")).willReturn("encoded-new");
+
+            userService.resetPasswordByAdmin(1L, new AdminPasswordResetRequest("NewPass!234"));
+
+            assertThat(user.getPassword()).isEqualTo("encoded-new");
+            verify(passwordEncoder).encode("NewPass!234");
         }
     }
 
@@ -196,9 +237,9 @@ class UserServiceTest {
             UserTable user = sampleUser();
             given(userRepository.findById(1L)).willReturn(Optional.of(user));
 
-            UserTable result = userService.updateRole(1L, UserRole.CLIENT);
+            UserTableResponse result = userService.updateRole(1L, UserRole.CLIENT);
 
-            assertThat(result.getRole()).isEqualTo(UserRole.CLIENT);
+            assertThat(result.role()).isEqualTo(UserRole.CLIENT);
         }
     }
 
@@ -214,7 +255,9 @@ class UserServiceTest {
 
             userService.deleteUser(1L);
 
-            verify(userRepository).delete(user);
+            assertThat(user.isDeleted()).isTrue();
+            assertThat(user.getStatus()).isEqualTo(Status.INACTIVE);
+            verify(userRepository, never()).delete(user);
         }
     }
 

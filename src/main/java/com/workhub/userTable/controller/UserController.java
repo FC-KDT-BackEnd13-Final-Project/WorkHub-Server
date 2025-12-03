@@ -3,7 +3,8 @@ package com.workhub.userTable.controller;
 import com.workhub.global.response.ApiResponse;
 import com.workhub.userTable.api.UserTableApi;
 import com.workhub.userTable.dto.UserLoginRecord;
-import com.workhub.userTable.dto.UserPasswordResetDto;
+import com.workhub.userTable.dto.AdminPasswordResetRequest;
+import com.workhub.userTable.dto.UserPasswordChangeRequest;
 import com.workhub.userTable.dto.UserRegisterRecord;
 import com.workhub.userTable.dto.UserTableResponse;
 import com.workhub.userTable.entity.UserTable;
@@ -15,7 +16,6 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContext;
@@ -54,7 +54,6 @@ public class UserController implements UserTableApi {
     }
 
     @PostMapping("/admin/users/add/user")
-    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public ResponseEntity<ApiResponse<UserTableResponse>> register(@RequestBody @Valid UserRegisterRecord registerRecord) {
         UserTable createdUser = userService.register(registerRecord);
@@ -62,34 +61,30 @@ public class UserController implements UserTableApi {
     }
 
     @PatchMapping("/auth/passwordReset/confirm")
-    @PreAuthorize("isAuthenticated()")
     @Override
     public ResponseEntity<ApiResponse<String>> updatePassword(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                              @Valid @RequestBody UserPasswordResetDto passwordUpdateDto) {
-        userService.resetPassword(userDetails.getUserId(), passwordUpdateDto);
+                                             @Valid @RequestBody UserPasswordChangeRequest passwordUpdateDto) {
+        userService.changePassword(userDetails.getUserId(), passwordUpdateDto);
         return ApiResponse.success("비밀번호 재설정 완료", "비밀번호 재설정 요청 성공");
     }
 
     @PatchMapping("/admin/users/{userId}/password/reset")
-    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public ResponseEntity<ApiResponse<String>> resetPasswordByAdmin(@PathVariable Long userId,
-                                                    @Valid @RequestBody UserPasswordResetDto passwordResetDto) {
-        userService.resetPassword(userId, passwordResetDto);
+                                                    @Valid @RequestBody AdminPasswordResetRequest passwordResetDto) {
+        userService.resetPasswordByAdmin(userId, passwordResetDto);
         return ApiResponse.success("관리자 비밀번호 초기화 완료", "관리자가 비밀번호를 초기화했습니다.");
     }
 
     @PatchMapping("/admin/users/{userId}/role")
-    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public ResponseEntity<ApiResponse<UserTableResponse>> updateUserRole(@PathVariable Long userId,
                                                                          @Valid @RequestBody UserRoleUpdateRequest request) {
-        UserTable updatedUser = userService.updateRole(userId, request.role());
-        return ApiResponse.success(UserTableResponse.from(updatedUser), "회원 역할이 변경되었습니다.");
+        UserTableResponse response = userService.updateRole(userId, request.role());
+        return ApiResponse.success(response, "회원 역할이 변경되었습니다.");
     }
 
     @DeleteMapping("/admin/users/{userId}")
-    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public ResponseEntity<ApiResponse<Object>> deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);

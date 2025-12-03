@@ -1,8 +1,10 @@
 package com.workhub.userTable.service;
 
+import com.workhub.userTable.dto.AdminPasswordResetRequest;
 import com.workhub.userTable.dto.UserLoginRecord;
-import com.workhub.userTable.dto.UserPasswordResetDto;
+import com.workhub.userTable.dto.UserPasswordChangeRequest;
 import com.workhub.userTable.dto.UserRegisterRecord;
+import com.workhub.userTable.dto.UserTableResponse;
 import com.workhub.userTable.entity.UserRole;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
@@ -26,8 +28,14 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
 
     public UserTable getUserById(Long id) {
-        return userRepository.findById(id)
+        UserTable userTable = userRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_EXISTS));
+
+        if (userTable.isDeleted()) {
+            throw new BusinessException(ErrorCode.USER_NOT_EXISTS);
+        }
+
+        return userTable;
     }
 
     public Authentication login(UserLoginRecord userLoginRecord) {
@@ -57,26 +65,37 @@ public class UserService {
     }
 
     @Transactional
-    public void resetPassword(Long targetUserId, UserPasswordResetDto passwordResetDto) {
-        if (!passwordResetDto.newPassword().equals(passwordResetDto.confirmPassword())) {
-            throw new BusinessException(ErrorCode.NOT_EQUAL_PASSWORD);
+    public void changePassword(Long userId, UserPasswordChangeRequest request) {
+        UserTable userTable = getUserById(userId);
+
+        if (!passwordEncoder.matches(request.currentPassword(), userTable.getPassword())) {
+            throw new BusinessException(ErrorCode.INVALID_LOGIN_CREDENTIALS);
         }
 
-        UserTable userTable = getUserById(targetUserId);
-        userTable.updatePassword(passwordEncoder.encode(passwordResetDto.newPassword()));
+        if (passwordEncoder.matches(request.newPassword(), userTable.getPassword())) {
+            throw new BusinessException(ErrorCode.INVALID_LOGIN_CREDENTIALS);
+        }
+
+        userTable.updatePassword(passwordEncoder.encode(request.newPassword()));
     }
 
     @Transactional
-    public UserTable updateRole(Long userId, UserRole role) {
+    public void resetPasswordByAdmin(Long userId, AdminPasswordResetRequest request) {
+        UserTable userTable = getUserById(userId);
+        userTable.updatePassword(passwordEncoder.encode(request.newPassword()));
+    }
+
+    @Transactional
+    public UserTableResponse updateRole(Long userId, UserRole role) {
         UserTable userTable = getUserById(userId);
         userTable.updateRole(role);
-        return userTable;
+        return UserTableResponse.from(userTable);
     }
 
     @Transactional
     public void deleteUser(Long userId) {
         UserTable userTable = getUserById(userId);
-        userRepository.delete(userTable);
+        userTable.markDeleted();
     }
 
     private void validateLoginId(String loginId) {

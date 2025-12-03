@@ -2,7 +2,8 @@ package com.workhub.userTable.api;
 
 import com.workhub.global.response.ApiResponse;
 import com.workhub.userTable.dto.UserLoginRecord;
-import com.workhub.userTable.dto.UserPasswordResetDto;
+import com.workhub.userTable.dto.AdminPasswordResetRequest;
+import com.workhub.userTable.dto.UserPasswordChangeRequest;
 import com.workhub.userTable.dto.UserRegisterRecord;
 import com.workhub.userTable.dto.UserTableResponse;
 import com.workhub.global.security.CustomUserDetails;
@@ -71,7 +72,7 @@ public interface UserTableApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류 (비밀번호 재설정 실패)")
     })
-    ResponseEntity<ApiResponse<String>> updatePassword(CustomUserDetails userDetails, UserPasswordResetDto passwordUpdateDto);
+    ResponseEntity<ApiResponse<String>> updatePassword(CustomUserDetails userDetails, UserPasswordChangeRequest passwordUpdateDto);
 
     @Operation(
             summary = "관리자 비밀번호 초기화",
@@ -92,7 +93,7 @@ public interface UserTableApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류 (비밀번호 초기화 실패)")
     })
-    ResponseEntity<ApiResponse<String>> resetPasswordByAdmin(Long userId, UserPasswordResetDto passwordResetDto);
+    ResponseEntity<ApiResponse<String>> resetPasswordByAdmin(Long userId, AdminPasswordResetRequest passwordResetDto);
 
     @Operation(
             summary = "회원 역할 변경",

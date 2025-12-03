@@ -35,17 +35,9 @@ class UserControllerTest {
     @Test
     @DisplayName("관리자가 회원 역할을 성공적으로 변경하면 200 응답을 반환한다")
     void updateUserRole_success() {
-        UserTable updatedUser = UserTable.of(
-                "testUser",
-                "encoded",
-                "user@test.com",
-                "01012345678",
-                UserRole.CLIENT,
-                Status.ACTIVE,
-                1L
-        );
-        ReflectionTestUtils.setField(updatedUser, "userId", 1L);
-        when(userService.updateRole(anyLong(), any(UserRole.class))).thenReturn(updatedUser);
+        UserTableResponse responseDto = new UserTableResponse(1L, "testUser", "user@test.com", "01012345678",
+                UserRole.CLIENT, Status.ACTIVE, 1L);
+        when(userService.updateRole(anyLong(), any(UserRole.class))).thenReturn(responseDto);
 
         ResponseEntity<ApiResponse<UserTableResponse>> response = userController.updateUserRole(
                 1L,
