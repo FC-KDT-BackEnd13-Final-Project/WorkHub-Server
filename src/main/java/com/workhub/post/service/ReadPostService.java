@@ -1,7 +1,5 @@
 package com.workhub.post.service;
 
-import com.workhub.global.error.ErrorCode;
-import com.workhub.global.error.exception.BusinessException;
 import com.workhub.post.entity.HashTag;
 import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostType;
@@ -32,7 +30,6 @@ public class ReadPostService {
      *
      * @param projectId 프로젝트 ID
      * @param nodeId 노드 ID
-     * @param userId 인증 사용자 ID
      * @param postId 게시글 ID
      * @return 조회된 게시글
      */
