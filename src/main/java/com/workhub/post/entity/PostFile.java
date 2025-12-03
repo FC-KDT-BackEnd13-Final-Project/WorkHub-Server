@@ -1,6 +1,8 @@
 package com.workhub.post.entity;
 
 import com.workhub.global.entity.BaseTimeEntity;
+import com.workhub.post.record.request.PostFileRequest;
+import com.workhub.post.repository.PostFileRepository;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,4 +33,13 @@ public class PostFile extends BaseTimeEntity {
 
     @Column(name = "file_order")
     private Integer fileOrder;
+
+    public static PostFile of(Long postId, PostFileRequest request) {
+        return PostFile.builder()
+                .postFileId(postId)
+                .fileName(request.fileName())
+                .fileOrder(request.fileOrder())
+                .build();
+    }
+
 }
