@@ -6,6 +6,7 @@ import com.workhub.global.history.HistoryRecorder;
 import com.workhub.projectNode.dto.CreateNodeRequest;
 import com.workhub.projectNode.dto.CreateNodeResponse;
 import com.workhub.projectNode.entity.NodeStatus;
+import com.workhub.projectNode.entity.Priority;
 import com.workhub.projectNode.entity.ProjectNode;
 import com.workhub.userTable.entity.UserTable;
 import com.workhub.userTable.security.CustomUserDetails;
@@ -61,7 +62,7 @@ class CreateProjectNodeServiceTest {
                 "새 노드",
                 "노드 설명",
                 1,
-                "MEDIUM"
+                Priority.MEDIUM
         );
     }
 
@@ -118,7 +119,7 @@ class CreateProjectNodeServiceTest {
                 "마지막 노드",
                 "마지막 노드 설명",
                 3,
-                "HIGH"
+                Priority.MEDIUM
         );
 
         ProjectNode savedNode = ProjectNode.builder()
@@ -170,7 +171,7 @@ class CreateProjectNodeServiceTest {
                 "중간 노드",
                 "중간 노드 설명",
                 2,
-                "MEDIUM"
+                Priority.MEDIUM
         );
 
         ProjectNode savedNode = ProjectNode.builder()
@@ -218,7 +219,7 @@ class CreateProjectNodeServiceTest {
                 "첫 번째 노드",
                 "첫 번째 노드 설명",
                 1,
-                "HIGH"
+                Priority.MEDIUM
         );
 
         ProjectNode savedNode = ProjectNode.builder()
@@ -325,7 +326,7 @@ class CreateProjectNodeServiceTest {
                 "새 노드",
                 "새 노드 설명",
                 2,
-                "MEDIUM"
+                Priority.MEDIUM
         );
 
         ProjectNode savedNode = ProjectNode.builder()
