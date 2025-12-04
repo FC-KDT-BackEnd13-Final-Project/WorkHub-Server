@@ -256,14 +256,15 @@ class UserServiceTest {
     }
 
     private UserTable sampleUser() {
-        return UserTable.of(
+        UserRegisterRecord register = new UserRegisterRecord(
                 "admin",
                 "encoded",
                 "admin@workhub.com",
                 "01000000000",
-                UserRole.ADMIN,
-                Status.ACTIVE,
-                1L
+                1L,
+                UserRole.ADMIN
         );
+
+        return UserTable.of(register, "encoded");
     }
 }

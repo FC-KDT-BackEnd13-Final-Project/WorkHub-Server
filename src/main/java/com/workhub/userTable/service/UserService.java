@@ -51,7 +51,7 @@ public class UserService {
         validateLoginId(record.loginId());
         validateEmail(record.email());
 
-        UserTable userTable = UserTable.from(
+        UserTable userTable = UserTable.of(
                 record,
                 passwordEncoder.encode(record.password())
         );

@@ -62,35 +62,15 @@ public class UserTable extends BaseTimeEntity {
         this.lastedAt = LocalDateTime.now();
     }
 
-    public static UserTable of(
-            String loginId,
-            String encodedPassword,
-            String email,
-            String phone,
-            UserRole role,
-            Status status,
-            Long companyId
-    ) {
+    public static UserTable of(UserRegisterRecord register, String encodedPassword) {
         return UserTable.builder()
-                .loginId(loginId)
+                .loginId(register.loginId())
                 .password(encodedPassword)
-                .email(email)
-                .phone(phone)
-                .role(role)
-                .status(status)
-                .companyId(companyId)
+                .email(register.email())
+                .phone(register.phone())
+                .role(register.role())
+                .companyId(register.companyId())
+                .status(Status.ACTIVE)
                 .build();
-    }
-
-    public static UserTable from(UserRegisterRecord registerRecord, String encodedPassword) {
-        return UserTable.of(
-                registerRecord.loginId(),
-                encodedPassword,
-                registerRecord.email(),
-                registerRecord.phone(),
-                registerRecord.role(),
-                Status.ACTIVE,
-                registerRecord.companyId()
-        );
     }
 }
