@@ -2,15 +2,10 @@ package com.workhub.userTable.controller;
 
 import com.workhub.global.response.ApiResponse;
 import com.workhub.userTable.api.UserTableApi;
-import com.workhub.userTable.dto.AdminPasswordResetRequest;
-import com.workhub.userTable.dto.UserLoginRecord;
-import com.workhub.userTable.dto.UserPasswordChangeRequest;
-import com.workhub.userTable.dto.UserRegisterRecord;
-import com.workhub.userTable.dto.UserTableResponse;
+import com.workhub.userTable.dto.*;
 import com.workhub.userTable.entity.UserTable;
 import com.workhub.global.security.CustomUserDetails;
 import com.workhub.userTable.service.UserService;
-import com.workhub.userTable.dto.UserRoleUpdateRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -22,6 +17,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -29,6 +25,15 @@ import org.springframework.web.bind.annotation.*;
 public class UserController implements UserTableApi {
 
     private final UserService userService;
+
+    @GetMapping
+    public List<UserListResponse> getUserTable(){
+        return userService.getUsers();
+    }
+    @GetMapping("/{userId}")
+    public UserDetailResponse getUser(@PathVariable Long userId){
+        return userService.getUser(userId);
+    }
 
     @PostMapping("/users/login")
     @Override
