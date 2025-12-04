@@ -2,13 +2,13 @@ package com.workhub.post.record.response;
 
 import com.workhub.post.entity.PostFile;
 
-public record PostFIleResponse(
-        Long PostFileId,
+public record PostFileResponse(
+        Long postFileId,
         String fileName,
         Integer fileOrder
 ) {
-    public static PostFIleResponse from(PostFile file) {
-        return new PostFIleResponse(
+    public static PostFileResponse from(PostFile file) {
+        return new PostFileResponse(
                 file.getPostFileId(),
                 file.getFileName(),
                 file.getFileOrder()
