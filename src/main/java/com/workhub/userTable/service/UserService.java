@@ -1,8 +1,11 @@
 package com.workhub.userTable.service;
 
 import com.workhub.userTable.dto.UserLoginRecord;
-import com.workhub.userTable.dto.UserPasswordResetDto;
+import com.workhub.userTable.dto.AdminPasswordResetRequest;
+import com.workhub.userTable.dto.UserPasswordChangeRequest;
 import com.workhub.userTable.dto.UserRegisterRecord;
+import com.workhub.userTable.dto.UserTableResponse;
+import com.workhub.userTable.entity.Status;
 import com.workhub.userTable.entity.UserRole;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
@@ -57,26 +60,32 @@ public class UserService {
     }
 
     @Transactional
-    public void resetPassword(Long targetUserId, UserPasswordResetDto passwordResetDto) {
-        if (!passwordResetDto.newPassword().equals(passwordResetDto.confirmPassword())) {
+    public void changePassword(Long targetUserId, UserPasswordChangeRequest passwordChangeRequest) {
+        UserTable userTable = getUserById(targetUserId);
+        if (!passwordEncoder.matches(passwordChangeRequest.currentPassword(), userTable.getPassword())) {
             throw new BusinessException(ErrorCode.NOT_EQUAL_PASSWORD);
         }
 
-        UserTable userTable = getUserById(targetUserId);
-        userTable.updatePassword(passwordEncoder.encode(passwordResetDto.newPassword()));
+        userTable.updatePassword(passwordEncoder.encode(passwordChangeRequest.newPassword()));
     }
 
     @Transactional
-    public UserTable updateRole(Long userId, UserRole role) {
+    public void resetPassword(Long targetUserId, AdminPasswordResetRequest passwordResetRequest) {
+        UserTable userTable = getUserById(targetUserId);
+        userTable.updatePassword(passwordEncoder.encode(passwordResetRequest.newPassword()));
+    }
+
+    @Transactional
+    public UserTableResponse updateRole(Long userId, UserRole role) {
         UserTable userTable = getUserById(userId);
         userTable.updateRole(role);
-        return userTable;
+        return UserTableResponse.from(userTable);
     }
 
     @Transactional
     public void deleteUser(Long userId) {
         UserTable userTable = getUserById(userId);
-        userRepository.delete(userTable);
+        userTable.updateStatus(Status.INACTIVE);
     }
 
     private void validateLoginId(String loginId) {

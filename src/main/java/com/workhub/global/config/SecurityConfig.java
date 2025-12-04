@@ -53,6 +53,8 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/admin/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/projects/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/auth/passwordReset/**").authenticated()
                         .anyRequest().permitAll()
                 );
 

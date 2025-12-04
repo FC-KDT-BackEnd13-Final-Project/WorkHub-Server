@@ -3,8 +3,10 @@ package com.workhub.userTable.service;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.userTable.dto.UserLoginRecord;
-import com.workhub.userTable.dto.UserPasswordResetDto;
+import com.workhub.userTable.dto.AdminPasswordResetRequest;
+import com.workhub.userTable.dto.UserPasswordChangeRequest;
 import com.workhub.userTable.dto.UserRegisterRecord;
+import com.workhub.userTable.dto.UserTableResponse;
 import com.workhub.userTable.entity.Status;
 import com.workhub.userTable.entity.UserRole;
 import com.workhub.userTable.entity.UserTable;
@@ -157,32 +159,54 @@ class UserServiceTest {
     }
 
     @Nested
-    @DisplayName("resetPassword")
-    class ResetPassword {
+    @DisplayName("changePassword")
+    class ChangePassword {
 
         @Test
-        @DisplayName("새 비밀번호가 일치하면 암호화 후 업데이트한다")
+        @DisplayName("현재 비밀번호가 일치하면 새 비밀번호로 변경한다")
         void success() {
             UserTable user = sampleUser();
             given(userRepository.findById(1L)).willReturn(Optional.of(user));
+            given(passwordEncoder.matches("Plain!234", user.getPassword())).willReturn(true);
             given(passwordEncoder.encode("NewPass!234")).willReturn("encoded-new");
 
-            userService.resetPassword(1L, new UserPasswordResetDto("NewPass!234", "NewPass!234"));
+            userService.changePassword(1L, new UserPasswordChangeRequest("Plain!234", "NewPass!234"));
 
             assertThat(user.getPassword()).isEqualTo("encoded-new");
             verify(passwordEncoder).encode("NewPass!234");
         }
 
         @Test
-        @DisplayName("비밀번호 확인이 다르면 예외")
-        void fail_mismatch() {
-            assertThatThrownBy(() -> userService.resetPassword(1L, new UserPasswordResetDto("a", "b")))
+        @DisplayName("현재 비밀번호가 다르면 예외를 던진다")
+        void fail_invalidCurrentPassword() {
+            UserTable user = sampleUser();
+            given(userRepository.findById(1L)).willReturn(Optional.of(user));
+            given(passwordEncoder.matches("wrong", user.getPassword())).willReturn(false);
+
+            assertThatThrownBy(() -> userService.changePassword(1L, new UserPasswordChangeRequest("wrong", "New!2345")))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorCode")
                     .isEqualTo(ErrorCode.NOT_EQUAL_PASSWORD);
 
-            verify(userRepository, never()).findById(anyLong());
             verify(passwordEncoder, never()).encode(anyString());
+        }
+    }
+
+    @Nested
+    @DisplayName("resetPassword")
+    class ResetPassword {
+
+        @Test
+        @DisplayName("관리자 요청이면 비밀번호를 즉시 새 값으로 설정한다")
+        void success() {
+            UserTable user = sampleUser();
+            given(userRepository.findById(1L)).willReturn(Optional.of(user));
+            given(passwordEncoder.encode("NewPass!234")).willReturn("encoded-new");
+
+            userService.resetPassword(1L, new AdminPasswordResetRequest("NewPass!234"));
+
+            assertThat(user.getPassword()).isEqualTo("encoded-new");
+            verify(passwordEncoder).encode("NewPass!234");
         }
     }
 
@@ -196,10 +220,10 @@ class UserServiceTest {
             UserTable user = sampleUser();
             given(userRepository.findById(1L)).willReturn(Optional.of(user));
 
-            UserTable result = userService.updateRole(1L, UserRole.CLIENT);
+            UserTableResponse result = userService.updateRole(1L, UserRole.CLIENT);
 
-            assertThat(result.getRole()).isEqualTo(UserRole.CLIENT);
-        }
+            assertThat(result.role()).isEqualTo(UserRole.CLIENT);
+    }
     }
 
     @Nested
@@ -207,14 +231,16 @@ class UserServiceTest {
     class DeleteUser {
 
         @Test
-        @DisplayName("사용자를 삭제하면 레포지토리 delete가 호출된다")
+        @DisplayName("사용자를 삭제하면 상태가 INACTIVE로 변경된다")
         void success() {
             UserTable user = sampleUser();
             given(userRepository.findById(1L)).willReturn(Optional.of(user));
 
             userService.deleteUser(1L);
 
-            verify(userRepository).delete(user);
+            assertThat(user.getStatus()).isEqualTo(Status.INACTIVE);
+            assertThat(user.getLastedAt()).isNotNull();
+            verify(userRepository, never()).delete(any(UserTable.class));
         }
     }
 

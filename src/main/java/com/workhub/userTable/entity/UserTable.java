@@ -4,6 +4,7 @@ import com.workhub.global.entity.BaseTimeEntity;
 import com.workhub.userTable.dto.UserRegisterRecord;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class UserTable extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,6 +57,11 @@ public class UserTable extends BaseTimeEntity {
         this.role = newRole;
     }
 
+    public void updateStatus(Status newStatus) {
+        this.status = newStatus;
+        this.lastedAt = LocalDateTime.now();
+    }
+
     public static UserTable of(
             String loginId,
             String encodedPassword,
@@ -64,15 +71,15 @@ public class UserTable extends BaseTimeEntity {
             Status status,
             Long companyId
     ) {
-        UserTable userTable = new UserTable();
-        userTable.loginId = loginId;
-        userTable.password = encodedPassword;
-        userTable.email = email;
-        userTable.phone = phone;
-        userTable.role = role;
-        userTable.status = status;
-        userTable.companyId = companyId;
-        return userTable;
+        return UserTable.builder()
+                .loginId(loginId)
+                .password(encodedPassword)
+                .email(email)
+                .phone(phone)
+                .role(role)
+                .status(status)
+                .companyId(companyId)
+                .build();
     }
 
     public static UserTable from(UserRegisterRecord registerRecord, String encodedPassword) {
