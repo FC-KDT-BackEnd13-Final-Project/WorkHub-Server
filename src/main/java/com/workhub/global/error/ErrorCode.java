@@ -44,6 +44,9 @@ public enum ErrorCode {
     WITHDRAWN_USER(HttpStatus.BAD_REQUEST, "M-009", "탈퇴한 회원입니다."),
     DORMANT_USER(HttpStatus.BAD_REQUEST, "M-010", "휴면 계정입니다."),
 
+    // 고객사
+    COMPANY_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "CO-001", "이미 등록된 고객사입니다."),
+
     // 게시물
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "PO-001", "게시물을 찾을 수 없습니다."),
     PARENT_POST_NOT_FOUND(HttpStatus.BAD_REQUEST, "PO-002", "부모 게시글을 찾을 수 없습니다."),
