@@ -1,6 +1,5 @@
 package com.workhub.project.service;
 
-import com.workhub.global.entity.ActionType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.project.entity.*;
@@ -17,7 +16,6 @@ import java.util.List;
 public class ProjectService {
 
     private final ProjectRepository projectRepository;
-    private final ProjectHistoryRepository projectHistoryRepository;
     private final ClientMemberRepository clientMemberRepository;
     private final DevMemberRepository devMemberRepository;
     private final ClientMemberHistoryRepository  clientMemberHistoryRepository;
@@ -40,25 +38,12 @@ public class ProjectService {
         return devMemberRepository.saveAll(projectDevMembers);
     }
 
-    public void saveProjectHistory(ProjectHistory projectHistory){
-        projectHistoryRepository.save(projectHistory);
-    }
-
     public void saveProjectClientMemberHistory(List<ProjectClientMemberHistory> clientMemberHistories){
         clientMemberHistoryRepository.saveAll(clientMemberHistories);
     }
 
     public void saveProjectDevMemberHistory(List<ProjectDevMemberHistory> projectDevMemberHistories){
         devMemberHistoryRepository.saveAll(projectDevMemberHistories);
-    }
-
-    public Long getProjectOriginalCreator(Long projectId){
-
-        return projectHistoryRepository
-                .findFirstByTargetIdAndActionTypeOrderByChangeLogIdAsc(projectId, ActionType.CREATE)
-                .map(ProjectHistory::getCreatedBy)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PROJECT_HISTORY_NOT_FOUND));
-
     }
 
     public Project validateCompletedProject(Long projectId) {

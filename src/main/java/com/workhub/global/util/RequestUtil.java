@@ -2,7 +2,7 @@ package com.workhub.global.util;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
-
+@Deprecated (forRemoval = true, since = "SecurityUtil에서 같은 기능을 사용할 수 있습니다.")
 @Component
 public class RequestUtil {
 
@@ -24,7 +24,6 @@ public class RequestUtil {
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
         }
-
         if (ip != null && ip.contains(",")) {
             ip = ip.split(",")[0].trim();
         }

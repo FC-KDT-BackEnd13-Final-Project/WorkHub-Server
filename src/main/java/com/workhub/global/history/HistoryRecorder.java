@@ -1,10 +1,10 @@
 package com.workhub.global.history;
 
-import com.workhub.global.context.RequestContext;
 import com.workhub.global.entity.ActionType;
 import com.workhub.global.entity.BaseHistoryEntity;
 import com.workhub.global.entity.HistoryType;
 import com.workhub.global.repository.BaseHistoryRepository;
+import com.workhub.global.util.SecurityUtil;
 import com.workhub.project.entity.ProjectHistory;
 import com.workhub.project.repository.ProjectHistoryRepository;
 import com.workhub.projectNode.entity.ProjectNodeHistory;
@@ -55,15 +55,22 @@ public class HistoryRecorder {
     public void recordHistory(HistoryType type,
                               Long targetId,
                               ActionType actionType,
-                              String beforeData,
-                              Long originalCreator,
-                              RequestContext context) {
+                              String beforeData) {
 
-        Long creator = originalCreator != null ? originalCreator : context.userId();
+        Long creator;
+
+        if (actionType == ActionType.CREATE) {
+            // CREATE 액션일 때는 현재 사용자가 생성자
+            creator = SecurityUtil.getCurrentUserIdOrThrow();
+        } else {
+            // UPDATE, DELETE 등일 때는 원래 생성자를 조회
+            creator = getOriginalCreator(type, targetId);
+        }
 
         HistoryHandler handler = getHandler(type);
+
         BaseHistoryEntity history = handler.createHistory(
-                targetId, actionType, beforeData, creator, context
+                targetId, actionType, beforeData, creator
         );
         handler.save(history);
 
@@ -93,7 +100,7 @@ public class HistoryRecorder {
     @FunctionalInterface
     public interface HistoryCreator {
         BaseHistoryEntity create(Long targetId, ActionType actionType, String beforeData,
-                                 Long creator, RequestContext context);
+                                 Long creator);
     }
 
     /**
@@ -105,10 +112,8 @@ public class HistoryRecorder {
         private final HistoryCreator creator;
 
         public BaseHistoryEntity createHistory(Long targetId, ActionType actionType,
-                                               String beforeData, Long creator,
-                                               RequestContext context) {
-            return this.creator.create(targetId, actionType, beforeData,
-                    creator, context);
+                                               String beforeData, Long creator) {
+            return this.creator.create(targetId, actionType, beforeData, creator);
         }
 
         @SuppressWarnings("unchecked")

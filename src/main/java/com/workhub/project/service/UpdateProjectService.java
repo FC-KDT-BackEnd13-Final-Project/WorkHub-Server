@@ -1,6 +1,5 @@
 package com.workhub.project.service;
 
-import com.workhub.global.context.RequestContext;
 import com.workhub.global.entity.ActionType;
 import com.workhub.global.entity.HistoryType;
 import com.workhub.global.history.HistoryRecorder;
@@ -26,21 +25,16 @@ public class UpdateProjectService {
      * 프로젝트 상태를 업데이트하고 변경 이력을 저장.
      * @param projectId 업데이트할 프로젝트 ID
      * @param statusRequest 변경할 상태 정보
-     * @param userIp 요청자 IP 주소
-     * @param userAgent 요청자 User-Agent
-     * @param userId 요청자 사용자 ID
      */
     public void updateProjectStatus(Long projectId,
-                                    UpdateStatusRequest statusRequest,
-                                    String userIp, String userAgent, Long userId) {
+                                    UpdateStatusRequest statusRequest) {
 
         Project original = projectService.findProjectById(projectId);
-        Long originalCreator = historyRecorder.getOriginalCreator(HistoryType.PROJECT, projectId);
         String beforeStatus = original.getStatus().toString();
 
-        RequestContext context = RequestContext.of(userId, userIp, userAgent);
-        historyRecorder.recordHistory(HistoryType.PROJECT, projectId, ActionType.UPDATE,
-                beforeStatus, originalCreator, context);
+        original.updateProjectStatus(statusRequest.status());
+
+        historyRecorder.recordHistory(HistoryType.PROJECT, projectId, ActionType.UPDATE, beforeStatus);
 
     }
 
@@ -50,20 +44,13 @@ public class UpdateProjectService {
      *
      * @param projectId 업데이트할 프로젝트 ID
      * @param request   업데이트할 프로젝트 정보
-     * @param userIp    요청자 IP 주소
-     * @param userAgent 요청자 User-Agent
-     * @param userId    요청자 사용자 ID
      * @return 변경된 엔티티 응답
      */
-    public ProjectResponse updateProject(Long projectId,
-                                         CreateProjectRequest request,
-                                         String userIp, String userAgent, Long userId) {
+    public ProjectResponse updateProject(Long projectId, CreateProjectRequest request) {
 
         Project original = projectService.findProjectById(projectId);
-        Long originalCreator = historyRecorder.getOriginalCreator(HistoryType.PROJECT, projectId);
 
-        recordFieldChangesIfNeeded(original, request, originalCreator,
-                userId, userIp, userAgent);
+        recordFieldChangesIfNeeded(original, request);
 
         original.update(request);
 
@@ -73,22 +60,18 @@ public class UpdateProjectService {
     /**
      * 필드 변경 감지 및 히스토리 기록
      */
-    private void recordFieldChangesIfNeeded(Project original,
-                                            CreateProjectRequest request,
-                                            Long originalCreator,
-                                            Long userId,
-                                            String userIp,
-                                            String userAgent) {
+    private void recordFieldChangesIfNeeded(Project original, CreateProjectRequest request) {
+
         Long projectId = original.getProjectId();
-        RequestContext context = RequestContext.of(userId, userIp, userAgent);
 
         // projectTitle 변경 체크
         if (request.projectName() != null &&
                 !request.projectName().equals(original.getProjectTitle())) {
+
             historyRecorder.recordHistory(
                     HistoryType.PROJECT, projectId, ActionType.UPDATE,
-                    original.getProjectTitle(), originalCreator, context
-            );
+                    original.getProjectTitle())
+            ;
         }
 
         // projectDescription 변경 체크
@@ -96,7 +79,7 @@ public class UpdateProjectService {
                 !request.projectDescription().equals(original.getProjectDescription())) {
             historyRecorder.recordHistory(
                     HistoryType.PROJECT, projectId, ActionType.UPDATE,
-                    original.getProjectDescription(), originalCreator, context
+                    original.getProjectDescription()
             );
         }
 
@@ -105,7 +88,7 @@ public class UpdateProjectService {
                 !request.starDate().equals(original.getContractStartDate())) {
             historyRecorder.recordHistory(
                     HistoryType.PROJECT, projectId, ActionType.UPDATE,
-                    original.getContractStartDate().toString(), originalCreator, context
+                    original.getContractStartDate().toString()
             );
         }
 
@@ -114,7 +97,7 @@ public class UpdateProjectService {
                 !request.endDate().equals(original.getContractEndDate())) {
             historyRecorder.recordHistory(
                     HistoryType.PROJECT, projectId, ActionType.UPDATE,
-                    original.getContractEndDate().toString(), originalCreator, context
+                    original.getContractEndDate().toString()
             );
         }
 
@@ -123,7 +106,7 @@ public class UpdateProjectService {
                 !request.company().equals(original.getClientCompanyId())) {
             historyRecorder.recordHistory(
                     HistoryType.PROJECT, projectId, ActionType.UPDATE,
-                    original.getClientCompanyId().toString(), originalCreator, context
+                    original.getClientCompanyId().toString()
             );
         }
     }

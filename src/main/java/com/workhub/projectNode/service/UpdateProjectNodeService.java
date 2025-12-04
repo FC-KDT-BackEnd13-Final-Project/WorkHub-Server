@@ -1,6 +1,5 @@
 package com.workhub.projectNode.service;
 
-import com.workhub.global.context.RequestContext;
 import com.workhub.global.entity.ActionType;
 import com.workhub.global.entity.HistoryType;
 import com.workhub.global.history.HistoryRecorder;
@@ -25,12 +24,8 @@ public class UpdateProjectNodeService {
      * 프로젝트 노드 상태를 업데이트하고 변경 이력을 저장.
      * @param nodeId 업데이트할 프로젝트 노드 ID
      * @param request 변경할 상태 정보
-     * @param userIp 요청자 IP 주소
-     * @param userAgent 요청자 User-Agent
-     * @param userId 요청자 사용자 ID
      */
-    public void updateNodeStatus(Long nodeId, UpdateNodeStatusRequest request,
-                                 String userIp, String userAgent, Long userId) {
+    public void updateNodeStatus(Long nodeId, UpdateNodeStatusRequest request) {
 
         ProjectNode original = projectNodeService.findById(nodeId);
         String beforeStatus = original.getNodeStatus().toString();
@@ -38,10 +33,7 @@ public class UpdateProjectNodeService {
         StatusValidator.validateStatusChange(original.getNodeStatus(), request.nodeStatus());
         original.updateNodeStatus(request.nodeStatus());
 
-        RequestContext context = RequestContext.of(userId, userIp, userAgent);
-        Long creator = historyRecorder.getOriginalCreator(HistoryType.PROJECT_NODE, nodeId);
-        historyRecorder.recordHistory(HistoryType.PROJECT_NODE, nodeId, ActionType.UPDATE,
-                beforeStatus, creator, context);
+        historyRecorder.recordHistory(HistoryType.PROJECT_NODE, nodeId, ActionType.UPDATE, beforeStatus);
 
     }
 }
