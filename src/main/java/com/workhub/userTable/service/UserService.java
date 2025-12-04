@@ -33,7 +33,7 @@ public class UserService {
 
     public UserDetailResponse getUser(Long userId){
         UserTable userTable = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_EXISTS));
         return UserDetailResponse.from(userTable);
 
     }
