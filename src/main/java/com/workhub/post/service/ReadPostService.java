@@ -1,6 +1,5 @@
 package com.workhub.post.service;
 
-import com.workhub.post.entity.HashTag;
 import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostFile;
 import com.workhub.post.entity.PostLink;
@@ -59,7 +58,6 @@ public class ReadPostService {
      * @param userId 인증 사용자 ID
      * @param keyword 검색 키워드
      * @param postType 게시글 타입
-     * @param hashTag 해시태그 필터
      * @param pageable 페이징 정보
      * @return 검색 결과 페이지
      */
@@ -68,11 +66,10 @@ public class ReadPostService {
                                    Long userId,
                                    String keyword,
                                    PostType postType,
-                                   HashTag hashTag,
                                    Pageable pageable) {
         projectService.validateProject(projectId);
 
-        Page<Post> parentPage = postService.searchParentPosts(nodeId, keyword, postType, hashTag, pageable);
+        Page<Post> parentPage = postService.searchParentPosts(nodeId, keyword, postType, pageable);
 
         List<Long> parentIds = parentPage.getContent().stream().map(Post::getPostId).toList();
         Map<Long, List<Post>> childrenMap = buildChildrenMap(parentIds);
