@@ -20,12 +20,12 @@ public class CompanyService {
     public CompanyResponse registerCompany(CompanyRegisterRequest request) {
         validateDuplicateCompanyNumber(request.companyNumber());
 
-        Company company = Company.builder()
-                .companyName(request.companyName())
-                .companyNumber(request.companyNumber())
-                .tel(request.tel())
-                .address(request.address())
-                .build();
+        Company company = new Company(
+                request.companyName(),
+                request.companyNumber(),
+                request.tel(),
+                request.address()
+        );
 
         Company savedCompany = companyRepository.save(company);
         return CompanyResponse.from(savedCompany);

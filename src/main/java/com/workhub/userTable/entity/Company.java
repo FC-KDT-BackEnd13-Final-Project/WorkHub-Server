@@ -32,4 +32,10 @@ public class Company extends BaseTimeEntity {
     @Column(name = "address", nullable = false, length = 100)
     private String address;
 
+    public Company(String companyName, String companyNumber, String tel, String address) {
+        this.companyName = companyName;
+        this.companyNumber = companyNumber;
+        this.tel = tel;
+        this.address = address;
+    }
 }

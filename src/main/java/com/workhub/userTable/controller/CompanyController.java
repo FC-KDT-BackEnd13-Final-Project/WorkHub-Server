@@ -20,7 +20,7 @@ public class CompanyController implements CompanyApi {
 
     private final CompanyService companyService;
 
-    @PostMapping({"/users/add/company"})
+    @PostMapping("/users/add/company")
     public ResponseEntity<ApiResponse<CompanyResponse>> registerCompany(@RequestBody @Valid CompanyRegisterRequest request) {
         CompanyResponse response = companyService.registerCompany(request);
         return ApiResponse.created(response, "고객사가 등록되었습니다.");
