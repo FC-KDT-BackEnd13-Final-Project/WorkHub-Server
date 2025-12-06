@@ -74,7 +74,7 @@ public class PostController implements PostApi {
         /**
          * 검색 조건과 Pageable 정보를 기반으로 게시글 목록을 조회한다.
          */
-        PostPageResponse response = readPostService.search(projectId, nodeId, getUserId(userDetails), keyword, postType, pageable);
+        PostPageResponse response = readPostService.search(projectId, nodeId, keyword, postType, pageable);
 
         return ApiResponse.success(response, "게시글 목록 조회에 성공했습니다.");
     }
@@ -85,7 +85,7 @@ public class PostController implements PostApi {
                                                              @PathVariable Long nodeId,
                                                              @PathVariable Long postId,
                                                              @AuthenticationPrincipal CustomUserDetails userDetails) {
-        PostResponse response = readPostService.findById(projectId, nodeId, getUserId(userDetails), postId);
+        PostResponse response = readPostService.findById(projectId, nodeId, postId);
         return ApiResponse.success(response, "게시글 조회에 성공했습니다.");
     }
 

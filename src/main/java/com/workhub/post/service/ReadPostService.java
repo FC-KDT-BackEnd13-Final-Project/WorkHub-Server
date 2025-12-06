@@ -34,7 +34,7 @@ public class ReadPostService {
      * @param postId 게시글 ID
      * @return 조회된 게시글
      */
-    public PostResponse findById(Long projectId, Long nodeId, Long userId, Long postId) {
+    public PostResponse findById(Long projectId, Long nodeId, Long postId) {
         projectService.validateProject(projectId);
         Post post = postService.findById(postId);
         postService.validateNode(post, nodeId);
@@ -55,7 +55,6 @@ public class ReadPostService {
      *
      * @param projectId 프로젝트 ID
      * @param nodeId 노드 ID
-     * @param userId 인증 사용자 ID
      * @param keyword 검색 키워드
      * @param postType 게시글 타입
      * @param pageable 페이징 정보
@@ -63,7 +62,6 @@ public class ReadPostService {
      */
     public PostPageResponse search(Long projectId,
                                    Long nodeId,
-                                   Long userId,
                                    String keyword,
                                    PostType postType,
                                    Pageable pageable) {
