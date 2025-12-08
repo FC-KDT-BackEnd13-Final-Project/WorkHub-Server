@@ -35,4 +35,7 @@ public class ProjectNodeService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROJECT_NODE_NOT_FOUND));
     }
 
+    public java.util.Map<Long, Long> getProjectNodeCountMapByProjectIdIn(List<Long> projectIds) {
+        return projectNodeRepository.countMapByProjectIdIn(projectIds);
+    }
 }
