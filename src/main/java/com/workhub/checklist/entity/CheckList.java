@@ -19,10 +19,13 @@ public class CheckList {
     @Column(name = "check_list_id")
     private Long checkListId;
 
-    @Column(name = "check_list_title", length = 50, nullable = false)
-    private String checkListTitle;
+    @Column(name = "check_list_description", length = 50, nullable = false)
+    private String checkListDescription;
 
     @Column(name = "project_node_id")
     private Long projectNodeId;
+
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
 }

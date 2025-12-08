@@ -28,9 +28,6 @@ public class CheckListItem extends BaseTimeEntity {
     @Column(name = "item_order")
     private Integer itemOrder;
 
-    @Column(name = "comment", columnDefinition = "TEXT")
-    private String comment;
-
     @Column(name = "confirm")
     private Boolean confirm;
 
