@@ -5,6 +5,7 @@ import com.workhub.global.entity.HistoryType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.history.HistoryRecorder;
+import com.workhub.post.dto.comment.CommentHistorySnapshot;
 import com.workhub.post.dto.comment.request.CommentRequest;
 import com.workhub.post.dto.comment.response.CommentResponse;
 import com.workhub.post.entity.PostComment;
@@ -48,7 +49,7 @@ class CreateCommentServiceTest {
     void create_withMismatchedParent_shouldThrow() {
         CommentRequest request = new CommentRequest("hello", 99L);
         // resolveParent가 현재 postId로 조회하므로 postId와 다른 게시글을 리턴시켜 불일치 유발
-        given(commentService.findById(2L)).willReturn(mockComment(5L, 10L, null, "parent"));
+        given(commentService.findById(99L)).willReturn(mockComment(5L, 10L, null, "parent"));
 
         assertThatThrownBy(() -> createCommentService.create(1L, 2L, 3L, request))
                 .isInstanceOf(BusinessException.class)
@@ -66,10 +67,10 @@ class CreateCommentServiceTest {
 
         assertThat(response.commentId()).isEqualTo(10L);
         verify(historyRecorder).recordHistory(
-                eq(HistoryType.POST),
+                eq(HistoryType.POST_COMMENT),
                 eq(10L),
                 eq(ActionType.CREATE),
-                eq("hello")
+                eq(CommentHistorySnapshot.from(saved))
         );
     }
 

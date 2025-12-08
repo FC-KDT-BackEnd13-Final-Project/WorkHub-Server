@@ -5,6 +5,7 @@ import com.workhub.global.entity.HistoryType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.history.HistoryRecorder;
+import com.workhub.post.dto.comment.CommentHistorySnapshot;
 import com.workhub.post.entity.PostComment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -68,10 +69,10 @@ class DeleteCommentServiceTest {
         assertThat(result).isEqualTo(2L);
         assertThat(comment.isDeleted()).isTrue();
         verify(historyRecorder).recordHistory(
-                eq(HistoryType.POST),
+                eq(HistoryType.POST_COMMENT),
                 eq(1L),
                 eq(ActionType.DELETE),
-                eq("content")
+                eq(CommentHistorySnapshot.from(comment))
         );
     }
 

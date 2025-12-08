@@ -5,6 +5,7 @@ import com.workhub.global.entity.HistoryType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.history.HistoryRecorder;
+import com.workhub.post.dto.comment.CommentHistorySnapshot;
 import com.workhub.post.dto.comment.request.CommentRequest;
 import com.workhub.post.dto.comment.response.CommentResponse;
 import com.workhub.post.entity.PostComment;
@@ -35,7 +36,7 @@ public class CreateCommentService {
         PostComment postComment = PostComment.of(postId, userId, parentCommentId, commentRequest.content());
         postComment =  commentService.save(postComment);
 
-        historyRecorder.recordHistory(HistoryType.POST, postComment.getCommentId(), ActionType.CREATE, postComment.getContent());
+        snapshotAndRecordHistory(postComment, ActionType.CREATE);
         return CommentResponse.from(postComment);
     }
 
@@ -56,10 +57,18 @@ public class CreateCommentService {
             return null;
         }
 
-        PostComment parent = commentService.findById(postId);
+        PostComment parent = commentService.findById(parentCommentId);
         if (!postId.equals(parent.getPostId())) {
             throw new BusinessException(ErrorCode.NOT_MATCHED_COMMENT_POST);
         }
-        return parent.getPostId();
+        return parent.getCommentId();
+    }
+
+    /**
+     * 댓글을 스냅샷으로 변환해 히스토리에 저장한다.
+     */
+    private void snapshotAndRecordHistory(PostComment comment, ActionType actionType) {
+        CommentHistorySnapshot snapshot = CommentHistorySnapshot.from(comment);
+        historyRecorder.recordHistory(HistoryType.POST_COMMENT, comment.getCommentId(), actionType, snapshot);
     }
 }

@@ -5,6 +5,7 @@ import com.workhub.global.entity.HistoryType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.history.HistoryRecorder;
+import com.workhub.post.dto.comment.CommentHistorySnapshot;
 import com.workhub.post.entity.PostComment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -53,8 +54,13 @@ public class DeleteCommentService {
         for (PostComment child : children) {
             deleteWithChildren(child);
         }
-        historyRecorder.recordHistory(HistoryType.POST, comment.getCommentId(), ActionType.DELETE, comment.getContent());
+        snapshotAndRecordHistory(comment, ActionType.DELETE);
 
         comment.markDeleted();
+    }
+
+    private void snapshotAndRecordHistory(PostComment comment, ActionType actionType) {
+        CommentHistorySnapshot snapshot = CommentHistorySnapshot.from(comment);
+        historyRecorder.recordHistory(HistoryType.POST_COMMENT, comment.getCommentId(), actionType, snapshot);
     }
 }

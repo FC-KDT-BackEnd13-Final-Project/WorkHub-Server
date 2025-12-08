@@ -5,6 +5,7 @@ import com.workhub.global.entity.HistoryType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.history.HistoryRecorder;
+import com.workhub.post.dto.comment.CommentHistorySnapshot;
 import com.workhub.post.dto.comment.request.CommentUpdateRequest;
 import com.workhub.post.dto.comment.response.CommentResponse;
 import com.workhub.post.entity.PostComment;
@@ -33,7 +34,7 @@ public class UpdateCommentService {
 
         validateCommentBelongs(postComment, postId);
 
-        historyRecorder.recordHistory(HistoryType.POST, postComment.getCommentId(), ActionType.UPDATE, postComment.getContent());
+        snapshotAndRecordHistory(postComment, ActionType.UPDATE);
 
         postComment.updateContent(commentUpdateRequest.commentContext());
         return CommentResponse.from(postComment);
@@ -47,5 +48,10 @@ public class UpdateCommentService {
             throw new BusinessException(ErrorCode.NOT_MATCHED_COMMENT_POST);
         }
 
+    }
+
+    private void snapshotAndRecordHistory(PostComment comment, ActionType actionType) {
+        CommentHistorySnapshot snapshot = CommentHistorySnapshot.from(comment);
+        historyRecorder.recordHistory(HistoryType.POST_COMMENT, comment.getCommentId(), actionType, snapshot);
     }
 }
