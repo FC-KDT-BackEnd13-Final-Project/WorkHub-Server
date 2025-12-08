@@ -2,6 +2,7 @@ package com.workhub.post.service;
 
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
+import com.workhub.global.history.HistoryRecorder;
 import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostType;
 import com.workhub.post.record.request.PostRequest;
@@ -28,8 +29,10 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(SpringExtension.class)
 public class PostServiceTest {
@@ -43,15 +46,17 @@ public class PostServiceTest {
     PostService postService;
     @Mock
     ProjectService projectService;
+    @Mock
+    HistoryRecorder historyRecorder;
     CreatePostService createPostService;
     UpdatePostService updatePostService;
     DeletePostService deletePostService;
 
     @BeforeEach
     void setUp() {
-        createPostService = new CreatePostService(postService, projectService);
-        updatePostService = new UpdatePostService(postService, projectService);
-        deletePostService = new DeletePostService(postService, projectService);
+        createPostService = new CreatePostService(postService, projectService, historyRecorder);
+        updatePostService = new UpdatePostService(postService, projectService, historyRecorder);
+        deletePostService = new DeletePostService(postService, projectService, historyRecorder);
         given(postRepository.findByParentPostIdAndDeletedAtIsNull(anyLong())).willReturn(Collections.emptyList());
         given(postFileRepository.findByPostId(anyLong())).willReturn(Collections.emptyList());
         given(postLinkRepository.findByPostId(anyLong())).willReturn(Collections.emptyList());
@@ -106,6 +111,12 @@ public class PostServiceTest {
 
         assertThat(result.postId()).isEqualTo(10L);
         assertThat(result.title()).isEqualTo("title");
+        verify(historyRecorder).recordHistory(
+                eq(com.workhub.global.entity.HistoryType.POST),
+                eq(10L),
+                eq(com.workhub.global.entity.ActionType.CREATE),
+                any(Object.class)
+        );
     }
 
     @Test
@@ -145,6 +156,12 @@ public class PostServiceTest {
 
         assertThat(result.title()).isEqualTo("new");
         assertThat(result.postIp()).isEqualTo("2.2.2.2");
+        verify(historyRecorder).recordHistory(
+                eq(com.workhub.global.entity.HistoryType.POST),
+                eq(1L),
+                eq(com.workhub.global.entity.ActionType.UPDATE),
+                any(Object.class)
+        );
     }
 
     @Test
@@ -241,6 +258,12 @@ public class PostServiceTest {
         deletePostService.delete(10L, 20L, 1L, 30L);
 
         assertThat(existing.isDeleted()).isTrue();
+        verify(historyRecorder).recordHistory(
+                eq(com.workhub.global.entity.HistoryType.POST),
+                eq(1L),
+                eq(com.workhub.global.entity.ActionType.DELETE),
+                any(Object.class)
+        );
     }
 
     @Test
