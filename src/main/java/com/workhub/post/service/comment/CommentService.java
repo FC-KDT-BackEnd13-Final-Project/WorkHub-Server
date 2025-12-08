@@ -23,7 +23,7 @@ public class CommentService {
 
     public PostComment findById(Long commentId) {
         return commentRepository.findById(commentId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXISTS_CS_QNA));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXISTS_COMMENT));
 
     }
 
