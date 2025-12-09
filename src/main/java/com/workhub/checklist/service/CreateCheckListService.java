@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -64,14 +65,10 @@ public class CreateCheckListService {
      * @return CheckListItemResponse 목록
      */
     private List<CheckListItemResponse> createCheckListItems(Long checkListId, List<CheckListItemRequest> itemRequests, Long userId) {
-        List<CheckListItemResponse> itemResponses = new ArrayList<>();
 
-        for (CheckListItemRequest itemRequest : itemRequests) {
-            CheckListItemResponse itemResponse = createCheckListItem(checkListId, itemRequest, userId);
-            itemResponses.add(itemResponse);
-        }
-
-        return itemResponses;
+        return itemRequests.stream().map(itemRequest ->
+                createCheckListItem(checkListId, itemRequest, userId))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -102,14 +99,10 @@ public class CreateCheckListService {
      * @return CheckListOptionResponse 목록
      */
     private List<CheckListOptionResponse> createCheckListOptions(Long itemId, List<CheckListOptionRequest> optionRequests) {
-        List<CheckListOptionResponse> optionResponses = new ArrayList<>();
 
-        for (CheckListOptionRequest optionRequest : optionRequests) {
-            CheckListOptionResponse optionResponse = createCheckListOption(itemId, optionRequest);
-            optionResponses.add(optionResponse);
-        }
-
-        return optionResponses;
+        return optionRequests.stream().map(optionRequest ->
+                createCheckListOption(itemId, optionRequest))
+                .collect(Collectors.toList());
     }
 
     /**

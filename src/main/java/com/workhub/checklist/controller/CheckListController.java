@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/projects/{projectId}")
+@RequestMapping("/api/v1/projects/{projectId}/nodes/{nodeId}")
 public class CheckListController implements CheckListApi {
 
     private final CreateCheckListService createCheckListService;
 
     @Override
-    @PostMapping("/nodes/{nodeId}/checkLists")
+    @PostMapping("/checkLists")
     @PreAuthorize("hasAnyRole('DEVELOPER', 'ADMIN')")
     public ResponseEntity<ApiResponse<CheckListResponse>> create(
             @PathVariable Long projectId,
