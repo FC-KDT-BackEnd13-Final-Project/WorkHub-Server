@@ -44,43 +44,10 @@ public class ReadProjectService {
             return List.of();
         }
 
-        // 1. 프로젝트 ID 리스트 수집
-        List<Long> projectIds = projects.stream()
-                .map(Project::getProjectId)
-                .toList();
+        List<Long> projectIds = extractProjectIds(projects);
+        BatchData batchData = loadBatchData(projectIds);
 
-        // 2. 모든 프로젝트의 멤버를 한 번에 조회
-        List<ProjectClientMember> allClientMembers = projectService.getClientMemberByProjectIdIn(projectIds);
-        List<ProjectDevMember> allDevMembers = projectService.getDevMemberByProjectIdIn(projectIds);
-
-        // 3. 모든 userId 수집
-        Set<Long> userIds = Stream.concat(
-                allClientMembers.stream().map(ProjectClientMember::getUserId),
-                allDevMembers.stream().map(ProjectDevMember::getUserId)
-        ).collect(Collectors.toSet());
-
-        // 4. 모든 사용자를 한 번에 조회
-        Map<Long, UserTable> userMap = userService.getUserMapByUserIdIn(List.copyOf(userIds));
-
-        // 5. 모든 워크플로우 개수를 한 번에 조회
-        Map<Long, Long> workflowCountMap = projectNodeService.getProjectNodeCountMapByProjectIdIn(projectIds);
-
-        // 6. projectId별로 멤버 그룹핑
-        Map<Long, List<ProjectClientMember>> clientMemberMap = allClientMembers.stream()
-                .collect(Collectors.groupingBy(ProjectClientMember::getProjectId));
-        Map<Long, List<ProjectDevMember>> devMemberMap = allDevMembers.stream()
-                .collect(Collectors.groupingBy(ProjectDevMember::getProjectId));
-
-        // 7. Response 생성
-        return projects.stream()
-                .map(project -> buildProjectResponse(
-                        project,
-                        clientMemberMap.getOrDefault(project.getProjectId(), List.of()),
-                        devMemberMap.getOrDefault(project.getProjectId(), List.of()),
-                        userMap,
-                        workflowCountMap.getOrDefault(project.getProjectId(), 0L)
-                ))
-                .toList();
+        return buildProjectResponses(projects, batchData);
     }
 
     /**
@@ -129,6 +96,94 @@ public class ReadProjectService {
             return List.of();
         }
         return projectService.findByProjectIdIn(projectIds);
+    }
+
+    /**
+     * 프로젝트 리스트에서 프로젝트 ID 리스트를 추출.
+     *
+     * @param projects 프로젝트 리스트
+     * @return 프로젝트 ID 리스트
+     */
+    private List<Long> extractProjectIds(List<Project> projects) {
+        return projects.stream()
+                .map(Project::getProjectId)
+                .toList();
+    }
+
+    /**
+     * 배치 조회를 통해 필요한 모든 데이터를 한 번에 로딩.
+     * 멤버, 사용자, 워크플로우 정보를 배치로 조회하고 그룹핑.
+     *
+     * @param projectIds 프로젝트 ID 리스트
+     * @return 배치 조회된 데이터 객체
+     */
+    private BatchData loadBatchData(List<Long> projectIds) {
+        List<ProjectClientMember> allClientMembers = projectService.getClientMemberByProjectIdIn(projectIds);
+        List<ProjectDevMember> allDevMembers = projectService.getDevMemberByProjectIdIn(projectIds);
+
+        Set<Long> userIds = collectUserIds(allClientMembers, allDevMembers);
+        Map<Long, UserTable> userMap = userService.getUserMapByUserIdIn(List.copyOf(userIds));
+        Map<Long, Long> workflowCountMap = projectNodeService.getProjectNodeCountMapByProjectIdIn(projectIds);
+
+        Map<Long, List<ProjectClientMember>> clientMemberMap = groupClientMembersByProjectId(allClientMembers);
+        Map<Long, List<ProjectDevMember>> devMemberMap = groupDevMembersByProjectId(allDevMembers);
+
+        return new BatchData(clientMemberMap, devMemberMap, userMap, workflowCountMap);
+    }
+
+    /**
+     * 클라이언트 멤버와 개발자 멤버에서 모든 사용자 ID를 수집.
+     *
+     * @param clientMembers 클라이언트 멤버 리스트
+     * @param devMembers 개발자 멤버 리스트
+     * @return 중복 제거된 사용자 ID 집합
+     */
+    private Set<Long> collectUserIds(List<ProjectClientMember> clientMembers, List<ProjectDevMember> devMembers) {
+        return Stream.concat(
+                clientMembers.stream().map(ProjectClientMember::getUserId),
+                devMembers.stream().map(ProjectDevMember::getUserId)
+        ).collect(Collectors.toSet());
+    }
+
+    /**
+     * 클라이언트 멤버 리스트를 프로젝트 ID별로 그룹핑.
+     *
+     * @param clientMembers 클라이언트 멤버 리스트
+     * @return 프로젝트 ID를 키로 하는 클라이언트 멤버 맵
+     */
+    private Map<Long, List<ProjectClientMember>> groupClientMembersByProjectId(List<ProjectClientMember> clientMembers) {
+        return clientMembers.stream()
+                .collect(Collectors.groupingBy(ProjectClientMember::getProjectId));
+    }
+
+    /**
+     * 개발자 멤버 리스트를 프로젝트 ID별로 그룹핑.
+     *
+     * @param devMembers 개발자 멤버 리스트
+     * @return 프로젝트 ID를 키로 하는 개발자 멤버 맵
+     */
+    private Map<Long, List<ProjectDevMember>> groupDevMembersByProjectId(List<ProjectDevMember> devMembers) {
+        return devMembers.stream()
+                .collect(Collectors.groupingBy(ProjectDevMember::getProjectId));
+    }
+
+    /**
+     * 프로젝트 리스트와 배치 데이터를 활용하여 응답 리스트 생성.
+     *
+     * @param projects 프로젝트 리스트
+     * @param batchData 배치 조회된 데이터
+     * @return 프로젝트 응답 리스트
+     */
+    private List<ProjectListResponse> buildProjectResponses(List<Project> projects, BatchData batchData) {
+        return projects.stream()
+                .map(project -> buildProjectResponse(
+                        project,
+                        batchData.clientMemberMap().getOrDefault(project.getProjectId(), List.of()),
+                        batchData.devMemberMap().getOrDefault(project.getProjectId(), List.of()),
+                        batchData.userMap(),
+                        batchData.workflowCountMap().getOrDefault(project.getProjectId(), 0L)
+                ))
+                .toList();
     }
 
     /**
@@ -196,4 +251,20 @@ public class ReadProjectService {
                 .address("서울시 강남구")
                 .build();
     }
+
+    /**
+     * 배치 조회된 데이터를 담는 내부 레코드.
+     * 멤버 맵, 사용자 맵, 워크플로우 개수 맵을 포함.
+     *
+     * @param clientMemberMap 프로젝트별 클라이언트 멤버 맵
+     * @param devMemberMap 프로젝트별 개발자 멤버 맵
+     * @param userMap 사용자 ID별 사용자 정보 맵
+     * @param workflowCountMap 프로젝트별 워크플로우 개수 맵
+     */
+    private record BatchData(
+            Map<Long, List<ProjectClientMember>> clientMemberMap,
+            Map<Long, List<ProjectDevMember>> devMemberMap,
+            Map<Long, UserTable> userMap,
+            Map<Long, Long> workflowCountMap
+    ) {}
 }

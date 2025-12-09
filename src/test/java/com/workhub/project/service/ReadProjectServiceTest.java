@@ -6,7 +6,6 @@ import com.workhub.global.security.CustomUserDetails;
 import com.workhub.project.dto.ProjectListResponse;
 import com.workhub.project.entity.*;
 import com.workhub.projectNode.service.ProjectNodeService;
-import com.workhub.userTable.entity.Company;
 import com.workhub.userTable.entity.UserRole;
 import com.workhub.userTable.entity.UserTable;
 import com.workhub.userTable.service.UserService;
@@ -21,11 +20,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -276,7 +279,8 @@ class ReadProjectServiceTest {
         // Then
         assertThat(result).hasSize(2);
 
-        // 배치 조회 메서드가 각각 1번씩만 호출되는지 확인
+        // loadBatchData() 메서드가 배치 조회를 올바르게 수행하는지 검증
+        // 프로젝트 개수와 무관하게 각 조회 메서드는 1번씩만 호출되어야 함 (N+1 문제 해결)
         verify(projectService, times(1)).getClientMemberByProjectIdIn(anyList());
         verify(projectService, times(1)).getDevMemberByProjectIdIn(anyList());
         verify(userService, times(1)).getUserMapByUserIdIn(anyList());
