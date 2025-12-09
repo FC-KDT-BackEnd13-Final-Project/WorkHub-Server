@@ -17,6 +17,7 @@ import java.util.Map;
 public class ProjectNodeService {
 
     private final ProjectNodeRepository projectNodeRepository;
+    private final ProjectNodeService projectNodeService;
 
     public ProjectNode saveProjectNode(ProjectNode projectNode){
         return projectNodeRepository.save(projectNode);
@@ -38,5 +39,12 @@ public class ProjectNodeService {
 
     public Map<Long, Long> getProjectNodeCountMapByProjectIdIn(List<Long> projectIds) {
         return projectNodeRepository.countMapByProjectIdIn(projectIds);
+    }
+
+    public void validateNodeToProject(Long nodeId, Long projectId){
+        ProjectNode node = projectNodeService.findById(nodeId);
+        if (!node.getProjectNodeId().equals(projectId)) {
+            throw new BusinessException(ErrorCode.NOT_MATCHED_PROJECT_POST);
+        }
     }
 }

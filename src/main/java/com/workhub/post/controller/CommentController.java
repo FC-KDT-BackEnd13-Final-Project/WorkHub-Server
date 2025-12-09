@@ -92,7 +92,7 @@ public class CommentController implements CommentApi {
             @PathVariable Long commentId,
             @Valid @RequestBody CommentUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        CommentResponse response = updateCommentService.update(commentId, postId, userDetails.getUserId(), request);
+        CommentResponse response = updateCommentService.update(projectId, commentId, postId, userDetails.getUserId(), request);
         return ApiResponse.success(response, "댓글 수정에 성공했습니다.");
     }
 
