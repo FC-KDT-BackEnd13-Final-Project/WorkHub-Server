@@ -75,7 +75,7 @@ public class ProjectController implements ProjectApi {
      * @param status 프로젝트 상태 (Optional, 기본값: 전체)
      * @param sortOrder 정렬 조건 (Optional, 기본값: LATEST)
      * @param cursor 커서 (마지막 조회한 projectId)
-     * @param size 페이지 크기 (Optional, 기본값: 10, 최대: 100)
+     * @param size 페이지 크기 (Optional, 기본값: 9, 최대: 100)
      * @return 페이징된 프로젝트 목록
      */
     @GetMapping("/list")
@@ -88,16 +88,8 @@ public class ProjectController implements ProjectApi {
             @RequestParam(required = false) Integer size
     ) {
 
-        ProjectListRequest request = ProjectListRequest.builder()
-                .startDate(startDate)
-                .endDate(endDate)
-                .status(status)
-                .sortOrder(sortOrder)
-                .cursor(cursor)
-                .size(size)
-                .build();
-
-        PagedProjectListResponse response = readProjectService.projectListWithPaging(request);
+        PagedProjectListResponse response = readProjectService.projectListWithPaging(startDate, endDate, status,
+                sortOrder, cursor, size);
         return ApiResponse.success(response);
     }
 

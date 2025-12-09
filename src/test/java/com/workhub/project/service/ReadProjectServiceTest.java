@@ -4,7 +4,6 @@ import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.security.CustomUserDetails;
 import com.workhub.project.dto.response.PagedProjectListResponse;
-import com.workhub.project.dto.response.ProjectListRequest;
 import com.workhub.project.entity.*;
 import com.workhub.projectNode.service.ProjectNodeService;
 import com.workhub.userTable.entity.UserRole;
@@ -140,9 +139,6 @@ class ReadProjectServiceTest {
     void givenClientUser_whenProjectListWithPaging_thenReturnOwnProjects() {
         // Given
         setSecurityContext(clientUser);
-        ProjectListRequest request = ProjectListRequest.builder()
-                .size(10)
-                .build();
 
         List<ProjectClientMember> clientMembers = Arrays.asList(clientMember1);
         List<Project> projects = Arrays.asList(project1);
@@ -159,7 +155,8 @@ class ReadProjectServiceTest {
         when(projectNodeService.getProjectNodeCountMapByProjectIdIn(Arrays.asList(1L))).thenReturn(workflowCountMap);
 
         // When
-        PagedProjectListResponse result = readProjectService.projectListWithPaging(request);
+        PagedProjectListResponse result = readProjectService.projectListWithPaging(
+                null, null, null, null, null, 10);
 
         // Then
         assertThat(result.projects()).hasSize(1);
@@ -176,9 +173,6 @@ class ReadProjectServiceTest {
     void givenDeveloperUser_whenProjectListWithPaging_thenReturnOwnProjects() {
         // Given
         setSecurityContext(developerUser);
-        ProjectListRequest request = ProjectListRequest.builder()
-                .size(10)
-                .build();
 
         List<ProjectDevMember> devMembers = Arrays.asList(devMember1);
         List<Project> projects = Arrays.asList(project1);
@@ -195,7 +189,8 @@ class ReadProjectServiceTest {
         when(projectNodeService.getProjectNodeCountMapByProjectIdIn(Arrays.asList(1L))).thenReturn(workflowCountMap);
 
         // When
-        PagedProjectListResponse result = readProjectService.projectListWithPaging(request);
+        PagedProjectListResponse result = readProjectService.projectListWithPaging(
+                null, null, null, null, null, 10);
 
         // Then
         assertThat(result.projects()).hasSize(1);
@@ -210,9 +205,6 @@ class ReadProjectServiceTest {
     void givenAdminUser_whenProjectListWithPaging_thenReturnAllProjects() {
         // Given
         setSecurityContext(adminUser);
-        ProjectListRequest request = ProjectListRequest.builder()
-                .size(10)
-                .build();
 
         List<Project> projects = Arrays.asList(project1, project2);
         Map<Long, UserTable> userMap = Map.of(10L, user1, 20L, user2);
@@ -227,7 +219,8 @@ class ReadProjectServiceTest {
         when(projectNodeService.getProjectNodeCountMapByProjectIdIn(Arrays.asList(1L, 2L))).thenReturn(workflowCountMap);
 
         // When
-        PagedProjectListResponse result = readProjectService.projectListWithPaging(request);
+        PagedProjectListResponse result = readProjectService.projectListWithPaging(
+                null, null, null, null, null, 10);
 
         // Then
         assertThat(result.projects()).hasSize(2);
@@ -244,10 +237,10 @@ class ReadProjectServiceTest {
     void givenNotLoggedIn_whenProjectListWithPaging_thenThrowException() {
         // Given
         SecurityContextHolder.clearContext();
-        ProjectListRequest request = ProjectListRequest.builder().build();
 
         // When & Then
-        assertThatThrownBy(() -> readProjectService.projectListWithPaging(request))
+        assertThatThrownBy(() -> readProjectService.projectListWithPaging(
+                null, null, null, null, null, null))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_LOGGED_IN);
 
@@ -259,15 +252,13 @@ class ReadProjectServiceTest {
     void givenNoProjects_whenProjectListWithPaging_thenReturnEmptyResponse() {
         // Given
         setSecurityContext(clientUser);
-        ProjectListRequest request = ProjectListRequest.builder()
-                .size(10)
-                .build();
 
         when(userService.getUserById(1L)).thenReturn(clientUser);
         when(projectService.getClientMemberByUserId(1L)).thenReturn(Collections.emptyList());
 
         // When
-        PagedProjectListResponse result = readProjectService.projectListWithPaging(request);
+        PagedProjectListResponse result = readProjectService.projectListWithPaging(
+                null, null, null, null, null, 10);
 
         // Then
         assertThat(result.projects()).isEmpty();
@@ -284,9 +275,6 @@ class ReadProjectServiceTest {
     void givenMultipleProjects_whenProjectListWithPaging_thenUseBatchQuery() {
         // Given
         setSecurityContext(adminUser);
-        ProjectListRequest request = ProjectListRequest.builder()
-                .size(10)
-                .build();
 
         List<Project> projects = Arrays.asList(project1, project2);
 
@@ -299,7 +287,8 @@ class ReadProjectServiceTest {
         when(projectNodeService.getProjectNodeCountMapByProjectIdIn(anyList())).thenReturn(Map.of(1L, 3L, 2L, 4L));
 
         // When
-        PagedProjectListResponse result = readProjectService.projectListWithPaging(request);
+        PagedProjectListResponse result = readProjectService.projectListWithPaging(
+                null, null, null, null, null, 10);
 
         // Then
         assertThat(result.projects()).hasSize(2);
@@ -316,9 +305,6 @@ class ReadProjectServiceTest {
     void givenMoreProjects_whenProjectListWithPaging_thenReturnNextCursor() {
         // Given
         setSecurityContext(adminUser);
-        ProjectListRequest request = ProjectListRequest.builder()
-                .size(2)
-                .build();
 
         // size + 1개 조회 (3개)
         Project project3 = Project.builder()
@@ -340,7 +326,8 @@ class ReadProjectServiceTest {
         when(projectNodeService.getProjectNodeCountMapByProjectIdIn(anyList())).thenReturn(Collections.emptyMap());
 
         // When
-        PagedProjectListResponse result = readProjectService.projectListWithPaging(request);
+        PagedProjectListResponse result = readProjectService.projectListWithPaging(
+                null, null, null, null, null, 2);
 
         // Then
         assertThat(result.projects()).hasSize(2); // size만큼만 반환
@@ -353,22 +340,26 @@ class ReadProjectServiceTest {
     void givenNoDateRange_whenProjectListWithPaging_thenApplyDefaultDateRange() {
         // Given
         setSecurityContext(adminUser);
-        ProjectListRequest request = ProjectListRequest.builder()
-                .size(10)
-                .build();
 
         when(userService.getUserById(3L)).thenReturn(adminUser);
         when(projectService.findProjectsWithPaging(any(), any(), any(), any(), any(), any(), anyInt()))
                 .thenReturn(Collections.emptyList());
 
         // When
-        PagedProjectListResponse result = readProjectService.projectListWithPaging(request);
+        PagedProjectListResponse result = readProjectService.projectListWithPaging(
+                null, null, null, null, null, 10);
 
         // Then
-        assertThat(request.getStartDate()).isNotNull(); // 1년 전으로 설정됨
-        assertThat(request.getEndDate()).isNotNull(); // 현재 날짜로 설정됨
-        assertThat(request.getStartDate()).isEqualTo(LocalDate.now().minusYears(1));
-        assertThat(request.getEndDate()).isEqualTo(LocalDate.now());
+        // 날짜 범위가 null이면 1년 전 ~ 현재 날짜로 설정되어 findProjectsWithPaging 호출
+        verify(projectService).findProjectsWithPaging(
+                isNull(),
+                eq(LocalDate.now().minusYears(1)),  // startDate 기본값
+                eq(LocalDate.now()),                 // endDate 기본값
+                isNull(),                            // status
+                any(),                               // sortOrder
+                isNull(),                            // cursor
+                eq(10)                               // size
+        );
     }
 
     @Test
@@ -376,19 +367,19 @@ class ReadProjectServiceTest {
     void givenOversizedPageSize_whenProjectListWithPaging_thenAdjustToMaxSize() {
         // Given
         setSecurityContext(adminUser);
-        ProjectListRequest request = ProjectListRequest.builder()
-                .size(200) // 최대값 초과
-                .build();
 
         when(userService.getUserById(3L)).thenReturn(adminUser);
         when(projectService.findProjectsWithPaging(any(), any(), any(), any(), any(), any(), anyInt()))
                 .thenReturn(Collections.emptyList());
 
         // When
-        readProjectService.projectListWithPaging(request);
+        readProjectService.projectListWithPaging(
+                null, null, null, null, null, 200);  // 최대값 초과
 
         // Then
-        assertThat(request.getSize()).isEqualTo(100); // 최대값으로 조정됨
+        // 페이지 크기가 100으로 조정되어 findProjectsWithPaging 호출
+        verify(projectService).findProjectsWithPaging(
+                any(), any(), any(), any(), any(), any(), eq(100));
     }
 
     @Test
@@ -396,9 +387,6 @@ class ReadProjectServiceTest {
     void givenMissingUserInMap_whenBuildResponse_thenFilterOutAndLogWarning() {
         // Given
         setSecurityContext(clientUser);
-        ProjectListRequest request = ProjectListRequest.builder()
-                .size(10)
-                .build();
 
         List<ProjectClientMember> clientMembers = Arrays.asList(clientMember1);
         List<Project> projects = Arrays.asList(project1);
@@ -415,7 +403,8 @@ class ReadProjectServiceTest {
         when(projectNodeService.getProjectNodeCountMapByProjectIdIn(Arrays.asList(1L))).thenReturn(workflowCountMap);
 
         // When
-        PagedProjectListResponse result = readProjectService.projectListWithPaging(request);
+        PagedProjectListResponse result = readProjectService.projectListWithPaging(
+                null, null, null, null, null, 10);
 
         // Then
         assertThat(result.projects()).hasSize(1);
@@ -429,9 +418,6 @@ class ReadProjectServiceTest {
     void givenProjectList_whenProjectListWithPaging_thenReturnWithCompanyInfo() {
         // Given
         setSecurityContext(clientUser);
-        ProjectListRequest request = ProjectListRequest.builder()
-                .size(10)
-                .build();
 
         List<ProjectClientMember> clientMembers = Arrays.asList(clientMember1);
         List<Project> projects = Arrays.asList(project1);
@@ -448,7 +434,8 @@ class ReadProjectServiceTest {
         when(projectNodeService.getProjectNodeCountMapByProjectIdIn(Arrays.asList(1L))).thenReturn(workflowCountMap);
 
         // When
-        PagedProjectListResponse result = readProjectService.projectListWithPaging(request);
+        PagedProjectListResponse result = readProjectService.projectListWithPaging(
+                null, null, null, null, null, 10);
 
         // Then
         assertThat(result.projects()).hasSize(1);

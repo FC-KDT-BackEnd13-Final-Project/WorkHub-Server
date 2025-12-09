@@ -52,10 +52,23 @@ public class ProjectListRequest {
      */
     public void validateAndAdjustSize() {
         if (this.size == null || this.size <= 0) {
-            this.size = 10;
+            this.size = 9;
         }
         if (this.size > 100) {
             this.size = 100;
         }
+    }
+
+    public static ProjectListRequest from(LocalDate startDate, LocalDate endDate, Status status,
+                                          ProjectListRequest.SortOrder sortOrder, Long cursor, Integer size) {
+
+        return ProjectListRequest.builder()
+                .startDate(startDate)
+                .endDate(endDate)
+                .status(status)
+                .sortOrder(sortOrder)
+                .cursor(cursor)
+                .size(size)
+                .build();
     }
 }

@@ -9,6 +9,7 @@ import com.workhub.project.dto.response.ProjectListResponse;
 import com.workhub.project.entity.Project;
 import com.workhub.project.entity.ProjectClientMember;
 import com.workhub.project.entity.ProjectDevMember;
+import com.workhub.project.entity.Status;
 import com.workhub.projectNode.service.ProjectNodeService;
 import com.workhub.userTable.entity.Company;
 import com.workhub.userTable.entity.UserRole;
@@ -19,7 +20,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,10 +41,17 @@ public class ReadProjectService {
     /**
      * 페이징, 필터링, 정렬이 적용된 프로젝트 목록 조회 (무한 스크롤용)
      *
-     * @param request 검색 조건 및 페이징 정보
+     * @param startDate 계약 시작일 검색 범위 시작 (Optional, 기본값: 1년 전)
+     * @param endDate 계약 시작일 검색 범위 종료 (Optional, 기본값: 현재 날짜)
+     * @param status 프로젝트 상태 (Optional, 기본값: 전체)
+     * @param sortOrder 정렬 조건 (Optional, 기본값: LATEST)
+     * @param cursor 커서 (마지막 조회한 projectId)
      * @return 페이징된 프로젝트 목록 응답
      */
-    public PagedProjectListResponse projectListWithPaging(ProjectListRequest request) {
+    public PagedProjectListResponse projectListWithPaging(LocalDate startDate, LocalDate endDate, Status status,
+                                                          ProjectListRequest.SortOrder sortOrder, Long cursor, Integer size) {
+
+        ProjectListRequest request = ProjectListRequest.from(startDate, endDate, status, sortOrder, cursor, size);
 
         // 날짜 범위 기본값 적용 및 페이지 크기 검증
         request.applyDefaultDateRange();
