@@ -33,7 +33,6 @@ public class ReadProjectService {
 
     /**
      * 사용자 권한(Role)에 따라 프로젝트 목록을 조회.
-     * QueryDSL 배치 조회로 N+1 문제 완전 해결 (181개 쿼리 → 6개 쿼리).
      *
      * @return 프로젝트 목록 응답 (멤버 정보, 워크플로우 단계, 총 인원 포함)
      */
@@ -53,7 +52,6 @@ public class ReadProjectService {
     /**
      * 사용자 Role에 따라 접근 가능한 프로젝트 목록을 조회.
      * CLIENT/DEVELOPER는 자신이 속한 프로젝트만, ADMIN은 전체 조회.
-     * 배치 조회로 N+1 문제 해결.
      *
      * @return 권한에 따른 프로젝트 목록
      */
