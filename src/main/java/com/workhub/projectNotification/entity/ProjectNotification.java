@@ -52,4 +52,8 @@ public class ProjectNotification extends BaseTimeEntity {
 
     @Column(name = "comment_id")
     private Long commentId;
+
+    public void markRead() {
+        this.readAt = LocalDateTime.now();
+    }
 }
