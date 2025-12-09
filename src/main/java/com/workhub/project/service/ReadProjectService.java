@@ -266,5 +266,6 @@ public class ReadProjectService {
             Map<Long, List<ProjectDevMember>> devMemberMap,
             Map<Long, UserTable> userMap,
             Map<Long, Long> workflowCountMap
-    ) {}
+    ) {
+    }
 }
