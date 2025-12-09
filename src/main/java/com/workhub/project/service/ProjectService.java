@@ -18,8 +18,6 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final ClientMemberRepository clientMemberRepository;
     private final DevMemberRepository devMemberRepository;
-    private final ClientMemberHistoryRepository  clientMemberHistoryRepository;
-    private final DevMemberHistoryRepository devMemberHistoryRepository;
 
     public Project saveProject(Project project){
         return projectRepository.save(project);
@@ -38,14 +36,6 @@ public class ProjectService {
         return devMemberRepository.saveAll(projectDevMembers);
     }
 
-    public void saveProjectClientMemberHistory(List<ProjectClientMemberHistory> clientMemberHistories){
-        clientMemberHistoryRepository.saveAll(clientMemberHistories);
-    }
-
-    public void saveProjectDevMemberHistory(List<ProjectDevMemberHistory> projectDevMemberHistories){
-        devMemberHistoryRepository.saveAll(projectDevMemberHistories);
-    }
-
     public Project validateCompletedProject(Long projectId) {
         Project project = findProjectById(projectId);
         if (!Status.COMPLETED.equals(project.getStatus())) {
@@ -60,5 +50,29 @@ public class ProjectService {
             throw new BusinessException(ErrorCode.INVALID_PROJECT_STATUS_FOR_POST);
         }
         return project;
+    }
+
+    public List<ProjectClientMember> getClientMemberByUserId(Long userId) {
+        return clientMemberRepository.findByUserId(userId);
+    }
+
+    public List<ProjectDevMember> getDevMemberByUserId(Long userId) {
+        return devMemberRepository.findByUserId(userId);
+    }
+
+    public List<Project> findAll() {
+        return projectRepository.findAll();
+    }
+
+    public List<ProjectClientMember> getClientMemberByProjectIdIn(List<Long> projectIds) {
+        return clientMemberRepository.findByProjectIdIn(projectIds);
+    }
+
+    public List<ProjectDevMember> getDevMemberByProjectIdIn(List<Long> projectIds) {
+        return devMemberRepository.findByProjectIdIn(projectIds);
+    }
+
+    public List<Project> findByProjectIdIn(List<Long> projectIds) {
+        return projectRepository.findByProjectIdIn(projectIds);
     }
 }

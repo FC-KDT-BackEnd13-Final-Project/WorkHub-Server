@@ -2,6 +2,7 @@ package com.workhub.cs.service.csQna;
 
 import com.workhub.cs.entity.CsQna;
 import com.workhub.cs.service.CsPostAccessValidator;
+import com.workhub.global.entity.ActionType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import jakarta.transaction.Transactional;
@@ -55,6 +56,7 @@ public class DeleteCsQnaService {
             deleteWithChildren(child);
         }
 
+        csQnaService.snapShotAndRecordHistory(csQna, csQna.getCsQnaId(), ActionType.DELETE);
         csQna.markDeleted();
     }
 }

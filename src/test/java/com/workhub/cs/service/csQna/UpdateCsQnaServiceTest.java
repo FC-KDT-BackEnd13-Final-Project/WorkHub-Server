@@ -4,6 +4,7 @@ import com.workhub.cs.dto.csQna.CsQnaResponse;
 import com.workhub.cs.dto.csQna.CsQnaUpdateRequest;
 import com.workhub.cs.entity.CsQna;
 import com.workhub.cs.service.CsPostAccessValidator;
+import com.workhub.global.entity.ActionType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import org.junit.jupiter.api.DisplayName;
@@ -55,6 +56,7 @@ class UpdateCsQnaServiceTest {
         assertThat(existing.getQnaContent()).isEqualTo("수정된 내용");
         verify(csPostAccessValidator).validateProjectAndGetPost(projectId, csPostId);
         verify(csQnaService).findByCsQnaAndMatchedUserId(csQnaId, userId);
+        verify(csQnaService).snapShotAndRecordHistory(existing, csQnaId, ActionType.UPDATE);
     }
 
     @DisplayName("요청한 게시글과 댓글이 속한 게시글이 다르면 예외가 발생한다")

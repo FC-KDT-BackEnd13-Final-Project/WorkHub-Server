@@ -4,6 +4,7 @@ import com.workhub.global.entity.ActionType;
 import com.workhub.global.entity.HistoryType;
 import com.workhub.global.history.HistoryRecorder;
 import com.workhub.project.dto.CreateProjectRequest;
+import com.workhub.project.dto.ProjectHistorySnapshot;
 import com.workhub.project.dto.ProjectResponse;
 import com.workhub.project.dto.UpdateStatusRequest;
 import com.workhub.project.entity.Project;
@@ -30,11 +31,11 @@ public class UpdateProjectService {
                                     UpdateStatusRequest statusRequest) {
 
         Project original = projectService.findProjectById(projectId);
-        String beforeStatus = original.getStatus().toString();
+        ProjectHistorySnapshot snapshot = ProjectHistorySnapshot.from(original);
+        //String beforeStatus = original.getStatus().toString();
 
         original.updateProjectStatus(statusRequest.status());
-
-        historyRecorder.recordHistory(HistoryType.PROJECT, projectId, ActionType.UPDATE, beforeStatus);
+        historyRecorder.recordHistory(HistoryType.PROJECT, projectId, ActionType.UPDATE, snapshot);
 
     }
 
@@ -49,66 +50,12 @@ public class UpdateProjectService {
     public ProjectResponse updateProject(Long projectId, CreateProjectRequest request) {
 
         Project original = projectService.findProjectById(projectId);
-
-        recordFieldChangesIfNeeded(original, request);
+        ProjectHistorySnapshot snapshot = ProjectHistorySnapshot.from(original);
 
         original.update(request);
+        historyRecorder.recordHistory(HistoryType.PROJECT, projectId, ActionType.UPDATE, snapshot);
 
         return ProjectResponse.from(original);
-    }
-
-    /**
-     * 필드 변경 감지 및 히스토리 기록
-     */
-    private void recordFieldChangesIfNeeded(Project original, CreateProjectRequest request) {
-
-        Long projectId = original.getProjectId();
-
-        // projectTitle 변경 체크
-        if (request.projectName() != null &&
-                !request.projectName().equals(original.getProjectTitle())) {
-
-            historyRecorder.recordHistory(
-                    HistoryType.PROJECT, projectId, ActionType.UPDATE,
-                    original.getProjectTitle())
-            ;
-        }
-
-        // projectDescription 변경 체크
-        if (request.projectDescription() != null &&
-                !request.projectDescription().equals(original.getProjectDescription())) {
-            historyRecorder.recordHistory(
-                    HistoryType.PROJECT, projectId, ActionType.UPDATE,
-                    original.getProjectDescription()
-            );
-        }
-
-        // contractStartDate 변경 체크
-        if (request.starDate() != null &&
-                !request.starDate().equals(original.getContractStartDate())) {
-            historyRecorder.recordHistory(
-                    HistoryType.PROJECT, projectId, ActionType.UPDATE,
-                    original.getContractStartDate().toString()
-            );
-        }
-
-        // contractEndDate 변경 체크
-        if (request.endDate() != null &&
-                !request.endDate().equals(original.getContractEndDate())) {
-            historyRecorder.recordHistory(
-                    HistoryType.PROJECT, projectId, ActionType.UPDATE,
-                    original.getContractEndDate().toString()
-            );
-        }
-
-        // clientCompanyId 변경 체크
-        if (request.company() != null &&
-                !request.company().equals(original.getClientCompanyId())) {
-            historyRecorder.recordHistory(
-                    HistoryType.PROJECT, projectId, ActionType.UPDATE,
-                    original.getClientCompanyId().toString()
-            );
-        }
     }
 
 }

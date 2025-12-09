@@ -4,6 +4,7 @@ import com.workhub.cs.dto.csQna.CsQnaRequest;
 import com.workhub.cs.dto.csQna.CsQnaResponse;
 import com.workhub.cs.entity.CsQna;
 import com.workhub.cs.service.CsPostAccessValidator;
+import com.workhub.global.entity.ActionType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import jakarta.transaction.Transactional;
@@ -26,8 +27,11 @@ public class CreateCsQnaService {
         Long parentQnaId = resolveParent(csPostId, csQnaRequest.parentQnaId());
 
         CsQna csQna = CsQna.of(csPostId, userId, parentQnaId, csQnaRequest.qnaContent());
+        csQna = csQnaService.save(csQna);
 
-        return CsQnaResponse.from(csQnaService.save(csQna));
+        csQnaService.snapShotAndRecordHistory(csQna, csQna.getCsQnaId(), ActionType.CREATE);
+
+        return CsQnaResponse.from(csQna);
     }
 
     /**

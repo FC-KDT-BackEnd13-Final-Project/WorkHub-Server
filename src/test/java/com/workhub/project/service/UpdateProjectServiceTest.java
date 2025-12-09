@@ -7,6 +7,7 @@ import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.history.HistoryRecorder;
 import com.workhub.global.security.CustomUserDetails;
 import com.workhub.project.dto.CreateProjectRequest;
+import com.workhub.project.dto.ProjectHistorySnapshot;
 import com.workhub.project.dto.ProjectResponse;
 import com.workhub.project.dto.UpdateStatusRequest;
 import com.workhub.project.entity.Project;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -29,8 +31,10 @@ import static com.workhub.userTable.entity.UserRole.ADMIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class UpdateProjectServiceTest {
@@ -91,18 +95,25 @@ class UpdateProjectServiceTest {
         UpdateStatusRequest statusRequest = new UpdateStatusRequest(Status.COMPLETED);
 
         when(projectService.findProjectById(projectId)).thenReturn(mockProject);
+        lenient().doNothing().when(historyRecorder).recordHistory(any(HistoryType.class), anyLong(), any(ActionType.class), any(Object.class));
 
         // when
         updateProjectService.updateProjectStatus(projectId, statusRequest);
 
         // then
         verify(projectService).findProjectById(projectId);
+
+        ArgumentCaptor<ProjectHistorySnapshot> snapshotCaptor = ArgumentCaptor.forClass(ProjectHistorySnapshot.class);
         verify(historyRecorder).recordHistory(
                 eq(HistoryType.PROJECT),
                 eq(projectId),
                 eq(ActionType.UPDATE),
-                eq("IN_PROGRESS")
+                snapshotCaptor.capture()
         );
+
+        ProjectHistorySnapshot capturedSnapshot = snapshotCaptor.getValue();
+        assertThat(capturedSnapshot.status()).isEqualTo(Status.IN_PROGRESS);
+        assertThat(capturedSnapshot.projectId()).isEqualTo(projectId);
     }
 
     @Test
@@ -126,12 +137,13 @@ class UpdateProjectServiceTest {
     }
 
     @Test
-    @DisplayName("프로젝트 정보를 정상적으로 업데이트하고 변경된 필드마다 히스토리를 기록한다")
+    @DisplayName("프로젝트 정보를 정상적으로 업데이트하고 변경 전 상태를 히스토리에 기록한다")
     void givenValidUpdateRequest_whenUpdateProject_thenSuccessAndRecordHistory() {
         // given
         Long projectId = 1L;
 
         when(projectService.findProjectById(projectId)).thenReturn(mockProject);
+        lenient().doNothing().when(historyRecorder).recordHistory(any(HistoryType.class), anyLong(), any(ActionType.class), any(Object.class));
 
         // when
         ProjectResponse result = updateProjectService.updateProject(projectId, updateRequest);
@@ -140,6 +152,8 @@ class UpdateProjectServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.projectTitle()).isEqualTo("수정된 프로젝트");
         assertThat(result.projectDescription()).isEqualTo("수정된 설명");
+        assertThat(result.contractStartDate()).isEqualTo(LocalDate.of(2024, 2, 1));
+        assertThat(result.contractEndDate()).isEqualTo(LocalDate.of(2024, 11, 30));
 
         assertThat(mockProject.getProjectTitle()).isEqualTo("수정된 프로젝트");
         assertThat(mockProject.getProjectDescription()).isEqualTo("수정된 설명");
@@ -149,18 +163,27 @@ class UpdateProjectServiceTest {
 
         verify(projectService).findProjectById(projectId);
 
-        // 5개 필드 모두 변경되었으므로 5번 히스토리 기록
-        verify(historyRecorder, times(5)).recordHistory(
+        // 변경 전 전체 스냅샷을 한 번만 히스토리에 기록
+        ArgumentCaptor<ProjectHistorySnapshot> snapshotCaptor = ArgumentCaptor.forClass(ProjectHistorySnapshot.class);
+        verify(historyRecorder, times(1)).recordHistory(
                 eq(HistoryType.PROJECT),
                 eq(projectId),
                 eq(ActionType.UPDATE),
-                anyString()
+                snapshotCaptor.capture()
         );
+
+        ProjectHistorySnapshot capturedSnapshot = snapshotCaptor.getValue();
+        assertThat(capturedSnapshot.projectTitle()).isEqualTo("기존 프로젝트");
+        assertThat(capturedSnapshot.projectDescription()).isEqualTo("기존 설명");
+        assertThat(capturedSnapshot.status()).isEqualTo(Status.IN_PROGRESS);
+        assertThat(capturedSnapshot.contractStartDate()).isEqualTo(LocalDate.of(2024, 1, 1));
+        assertThat(capturedSnapshot.contractEndDate()).isEqualTo(LocalDate.of(2024, 12, 31));
+        assertThat(capturedSnapshot.company()).isEqualTo(100L);
     }
 
     @Test
-    @DisplayName("일부 필드만 변경 시 해당 필드만 히스토리에 기록된다")
-    void givenPartialUpdateRequest_whenUpdateProject_thenRecordOnlyChangedFields() {
+    @DisplayName("일부 필드만 변경 시에도 변경 전 전체 상태를 히스토리에 기록한다")
+    void givenPartialUpdateRequest_whenUpdateProject_thenRecordCompleteSnapshot() {
         // given
         Long projectId = 1L;
 
@@ -176,6 +199,7 @@ class UpdateProjectServiceTest {
         );
 
         when(projectService.findProjectById(projectId)).thenReturn(mockProject);
+        lenient().doNothing().when(historyRecorder).recordHistory(any(HistoryType.class), anyLong(), any(ActionType.class), any(Object.class));
 
         // when
         ProjectResponse result = updateProjectService.updateProject(projectId, partialRequest);
@@ -187,18 +211,23 @@ class UpdateProjectServiceTest {
 
         verify(projectService).findProjectById(projectId);
 
-        // 2개 필드만 변경되었으므로 2번만 히스토리 기록
-        verify(historyRecorder, times(2)).recordHistory(
+        // 변경 전 전체 스냅샷을 한 번만 히스토리에 기록
+        ArgumentCaptor<ProjectHistorySnapshot> snapshotCaptor = ArgumentCaptor.forClass(ProjectHistorySnapshot.class);
+        verify(historyRecorder, times(1)).recordHistory(
                 eq(HistoryType.PROJECT),
                 eq(projectId),
                 eq(ActionType.UPDATE),
-                anyString()
+                snapshotCaptor.capture()
         );
+
+        ProjectHistorySnapshot capturedSnapshot = snapshotCaptor.getValue();
+        assertThat(capturedSnapshot.projectTitle()).isEqualTo("기존 프로젝트");
+        assertThat(capturedSnapshot.projectDescription()).isEqualTo("기존 설명");
     }
 
     @Test
-    @DisplayName("필드 변경이 없으면 히스토리가 기록되지 않는다")
-    void givenNoChanges_whenUpdateProject_thenNoHistoryRecorded() {
+    @DisplayName("필드 변경이 없어도 히스토리가 기록된다")
+    void givenNoChanges_whenUpdateProject_thenHistoryStillRecorded() {
         // given
         Long projectId = 1L;
 
@@ -214,6 +243,7 @@ class UpdateProjectServiceTest {
         );
 
         when(projectService.findProjectById(projectId)).thenReturn(mockProject);
+        lenient().doNothing().when(historyRecorder).recordHistory(any(HistoryType.class), anyLong(), any(ActionType.class), any(Object.class));
 
         // when
         ProjectResponse result = updateProjectService.updateProject(projectId, noChangeRequest);
@@ -223,8 +253,17 @@ class UpdateProjectServiceTest {
 
         verify(projectService).findProjectById(projectId);
 
-        // 변경된 필드가 없으므로 히스토리 기록 안 됨
-        verify(historyRecorder, never()).recordHistory(any(), any(), any(), any());
+        // 실제 구현은 변경 여부와 무관하게 항상 히스토리 기록
+        ArgumentCaptor<ProjectHistorySnapshot> snapshotCaptor = ArgumentCaptor.forClass(ProjectHistorySnapshot.class);
+        verify(historyRecorder, times(1)).recordHistory(
+                eq(HistoryType.PROJECT),
+                eq(projectId),
+                eq(ActionType.UPDATE),
+                snapshotCaptor.capture()
+        );
+
+        ProjectHistorySnapshot capturedSnapshot = snapshotCaptor.getValue();
+        assertThat(capturedSnapshot.projectTitle()).isEqualTo("기존 프로젝트");
     }
 
     @Test
@@ -247,8 +286,8 @@ class UpdateProjectServiceTest {
     }
 
     @Test
-    @DisplayName("프로젝트 제목만 변경 시 제목 히스토리만 기록된다")
-    void givenOnlyTitleChange_whenUpdateProject_thenRecordOnlyTitleHistory() {
+    @DisplayName("프로젝트 제목만 변경 시에도 변경 전 전체 상태를 히스토리에 기록한다")
+    void givenOnlyTitleChange_whenUpdateProject_thenRecordCompleteSnapshot() {
         // given
         Long projectId = 1L;
 
@@ -263,6 +302,7 @@ class UpdateProjectServiceTest {
         );
 
         when(projectService.findProjectById(projectId)).thenReturn(mockProject);
+        lenient().doNothing().when(historyRecorder).recordHistory(any(HistoryType.class), anyLong(), any(ActionType.class), any(Object.class));
 
         // when
         ProjectResponse result = updateProjectService.updateProject(projectId, titleOnlyRequest);
@@ -273,18 +313,22 @@ class UpdateProjectServiceTest {
 
         verify(projectService).findProjectById(projectId);
 
-        // 제목만 변경되었으므로 1번만 히스토리 기록
+        // 변경 전 전체 스냅샷을 한 번만 히스토리에 기록
+        ArgumentCaptor<ProjectHistorySnapshot> snapshotCaptor = ArgumentCaptor.forClass(ProjectHistorySnapshot.class);
         verify(historyRecorder, times(1)).recordHistory(
                 eq(HistoryType.PROJECT),
                 eq(projectId),
                 eq(ActionType.UPDATE),
-                eq("기존 프로젝트")
+                snapshotCaptor.capture()
         );
+
+        ProjectHistorySnapshot capturedSnapshot = snapshotCaptor.getValue();
+        assertThat(capturedSnapshot.projectTitle()).isEqualTo("기존 프로젝트");
     }
 
     @Test
-    @DisplayName("계약 기간만 변경 시 시작일과 종료일 히스토리가 기록된다")
-    void givenOnlyDateChange_whenUpdateProject_thenRecordDateHistory() {
+    @DisplayName("계약 기간만 변경 시에도 변경 전 전체 상태를 히스토리에 기록한다")
+    void givenOnlyDateChange_whenUpdateProject_thenRecordCompleteSnapshot() {
         // given
         Long projectId = 1L;
 
@@ -299,6 +343,7 @@ class UpdateProjectServiceTest {
         );
 
         when(projectService.findProjectById(projectId)).thenReturn(mockProject);
+        lenient().doNothing().when(historyRecorder).recordHistory(any(HistoryType.class), anyLong(), any(ActionType.class), any(Object.class));
 
         // when
         ProjectResponse result = updateProjectService.updateProject(projectId, dateOnlyRequest);
@@ -309,18 +354,23 @@ class UpdateProjectServiceTest {
 
         verify(projectService).findProjectById(projectId);
 
-        // 시작일, 종료일 2개 변경되었으므로 2번 히스토리 기록
-        verify(historyRecorder, times(2)).recordHistory(
+        // 변경 전 전체 스냅샷을 한 번만 히스토리에 기록
+        ArgumentCaptor<ProjectHistorySnapshot> snapshotCaptor = ArgumentCaptor.forClass(ProjectHistorySnapshot.class);
+        verify(historyRecorder, times(1)).recordHistory(
                 eq(HistoryType.PROJECT),
                 eq(projectId),
                 eq(ActionType.UPDATE),
-                anyString()
+                snapshotCaptor.capture()
         );
+
+        ProjectHistorySnapshot capturedSnapshot = snapshotCaptor.getValue();
+        assertThat(capturedSnapshot.contractStartDate()).isEqualTo(LocalDate.of(2024, 1, 1));
+        assertThat(capturedSnapshot.contractEndDate()).isEqualTo(LocalDate.of(2024, 12, 31));
     }
 
     @Test
-    @DisplayName("고객사만 변경 시 고객사 ID 히스토리가 기록된다")
-    void givenOnlyCompanyChange_whenUpdateProject_thenRecordCompanyHistory() {
+    @DisplayName("고객사만 변경 시에도 변경 전 전체 상태를 히스토리에 기록한다")
+    void givenOnlyCompanyChange_whenUpdateProject_thenRecordCompleteSnapshot() {
         // given
         Long projectId = 1L;
 
@@ -335,6 +385,7 @@ class UpdateProjectServiceTest {
         );
 
         when(projectService.findProjectById(projectId)).thenReturn(mockProject);
+        lenient().doNothing().when(historyRecorder).recordHistory(any(HistoryType.class), anyLong(), any(ActionType.class), any(Object.class));
 
         // when
         ProjectResponse result = updateProjectService.updateProject(projectId, companyOnlyRequest);
@@ -344,12 +395,57 @@ class UpdateProjectServiceTest {
 
         verify(projectService).findProjectById(projectId);
 
-        // 고객사 ID만 변경되었으므로 1번만 히스토리 기록
+        // 변경 전 전체 스냅샷을 한 번만 히스토리에 기록
+        ArgumentCaptor<ProjectHistorySnapshot> snapshotCaptor = ArgumentCaptor.forClass(ProjectHistorySnapshot.class);
         verify(historyRecorder, times(1)).recordHistory(
                 eq(HistoryType.PROJECT),
                 eq(projectId),
                 eq(ActionType.UPDATE),
-                eq("100")
+                snapshotCaptor.capture()
         );
+
+        ProjectHistorySnapshot capturedSnapshot = snapshotCaptor.getValue();
+        assertThat(capturedSnapshot.projectTitle()).isEqualTo("기존 프로젝트");
+        assertThat(capturedSnapshot.company()).isEqualTo(100L); // 변경 전 고객사 ID
+    }
+
+    @Test
+    @DisplayName("프로젝트 업데이트 시 모든 메서드가 순차적으로 호출된다")
+    void givenUpdateRequest_whenUpdateProject_thenAllMethodsCalledInOrder() {
+        // given
+        Long projectId = 1L;
+
+        when(projectService.findProjectById(projectId)).thenReturn(mockProject);
+        lenient().doNothing().when(historyRecorder).recordHistory(any(HistoryType.class), anyLong(), any(ActionType.class), any(Object.class));
+
+        // when
+        updateProjectService.updateProject(projectId, updateRequest);
+
+        // then
+        var inOrder = inOrder(projectService, historyRecorder);
+        inOrder.verify(projectService).findProjectById(projectId);
+        inOrder.verify(historyRecorder).recordHistory(any(HistoryType.class), anyLong(), any(ActionType.class), any(Object.class));
+    }
+
+    @Test
+    @DisplayName("프로젝트 업데이트 후 반환된 응답에 모든 필드가 포함된다")
+    void givenUpdateRequest_whenUpdateProject_thenReturnCompleteResponse() {
+        // given
+        Long projectId = 1L;
+
+        when(projectService.findProjectById(projectId)).thenReturn(mockProject);
+        lenient().doNothing().when(historyRecorder).recordHistory(any(HistoryType.class), anyLong(), any(ActionType.class), any(Object.class));
+
+        // when
+        ProjectResponse result = updateProjectService.updateProject(projectId, updateRequest);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.projectId()).isEqualTo(projectId);
+        assertThat(result.projectTitle()).isEqualTo("수정된 프로젝트");
+        assertThat(result.projectDescription()).isEqualTo("수정된 설명");
+        assertThat(result.status()).isEqualTo(Status.IN_PROGRESS);
+        assertThat(result.contractStartDate()).isEqualTo(LocalDate.of(2024, 2, 1));
+        assertThat(result.contractEndDate()).isEqualTo(LocalDate.of(2024, 11, 30));
     }
 }

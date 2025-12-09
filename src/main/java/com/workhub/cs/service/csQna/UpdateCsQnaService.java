@@ -4,6 +4,7 @@ import com.workhub.cs.dto.csQna.CsQnaResponse;
 import com.workhub.cs.dto.csQna.CsQnaUpdateRequest;
 import com.workhub.cs.entity.CsQna;
 import com.workhub.cs.service.CsPostAccessValidator;
+import com.workhub.global.entity.ActionType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,8 @@ public class UpdateCsQnaService {
 
         // 3. 프로젝트-게시글 관계 검증
         csPostAccessValidator.validateProjectAndGetPost(projectId, csPostId);
+
+        csQnaService.snapShotAndRecordHistory(csQna, csQna.getCsQnaId(), ActionType.UPDATE);
 
         csQna.updateContent(request.qnaContent());
         return CsQnaResponse.from(csQna);

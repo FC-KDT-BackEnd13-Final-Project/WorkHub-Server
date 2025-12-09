@@ -7,6 +7,7 @@ import com.workhub.cs.entity.CsPost;
 import com.workhub.cs.entity.CsPostFile;
 import com.workhub.cs.entity.CsPostStatus;
 import com.workhub.cs.service.CsPostAccessValidator;
+import com.workhub.global.entity.ActionType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import jakarta.transaction.Transactional;
@@ -59,6 +60,8 @@ public class UpdateCsPostService {
      */
     public CsPostStatus changeStatus(Long projectId, Long csPostId, CsPostStatus status) {
         CsPost csPost = csPostAccessValidator.validateProjectAndGetPost(projectId, csPostId);
+
+        csPostService.snapShotAndRecordHistory(csPost, csPost.getCsPostId(), ActionType.UPDATE);
 
         csPost.changeStatus(status);
 
@@ -169,6 +172,7 @@ public class UpdateCsPostService {
             throw new BusinessException(ErrorCode.INVALID_FILE_UPDATE);
         }
         CsPostFile newFile = CsPostFile.of(csPostId, req);
+
         return csPostService.saveFile(newFile);
     }
 
@@ -179,13 +183,16 @@ public class UpdateCsPostService {
      */
     private void updatePost(CsPost csPost, CsPostUpdateRequest request) {
         if (request.title() != null && !request.title().isBlank()) {
+            csPostService.snapShotAndRecordHistory(csPost, csPost.getCsPostId(), ActionType.UPDATE);
             csPost.updateTitle(request.title());
         }
 
         if (request.content() != null && !request.content().isBlank()) {
+            csPostService.snapShotAndRecordHistory(csPost, csPost.getCsPostId(), ActionType.UPDATE);
             csPost.updateContent(request.content());
         }
 
     }
+
 
 }
