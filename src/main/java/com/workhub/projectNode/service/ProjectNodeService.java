@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -35,4 +36,14 @@ public class ProjectNodeService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROJECT_NODE_NOT_FOUND));
     }
 
+    public Map<Long, Long> getProjectNodeCountMapByProjectIdIn(List<Long> projectIds) {
+        return projectNodeRepository.countMapByProjectIdIn(projectIds);
+    }
+
+    public void validateNodeToProject(Long nodeId, Long projectId){
+        ProjectNode node = findById(nodeId);
+        if (!node.getProjectId().equals(projectId)) {
+            throw new BusinessException(ErrorCode.NOT_MATCHED_PROJECT_POST);
+        }
+    }
 }

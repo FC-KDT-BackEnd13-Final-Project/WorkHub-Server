@@ -2,12 +2,14 @@ package com.workhub.project.service;
 
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
+import com.workhub.project.dto.response.ProjectListRequest;
 import com.workhub.project.entity.*;
 import com.workhub.project.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -50,5 +52,44 @@ public class ProjectService {
             throw new BusinessException(ErrorCode.INVALID_PROJECT_STATUS_FOR_POST);
         }
         return project;
+    }
+
+    public List<ProjectClientMember> getClientMemberByUserId(Long userId) {
+        return clientMemberRepository.findByUserId(userId);
+    }
+
+    public List<ProjectDevMember> getDevMemberByUserId(Long userId) {
+        return devMemberRepository.findByUserId(userId);
+    }
+
+    public List<Project> findAll() {
+        return projectRepository.findAll();
+    }
+
+    public List<ProjectClientMember> getClientMemberByProjectIdIn(List<Long> projectIds) {
+        return clientMemberRepository.findByProjectIdIn(projectIds);
+    }
+
+    public List<ProjectDevMember> getDevMemberByProjectIdIn(List<Long> projectIds) {
+        return devMemberRepository.findByProjectIdIn(projectIds);
+    }
+
+    /**
+     * 페이징, 필터링, 정렬이 적용된 프로젝트 조회
+     *
+     * @param projectIds 조회할 프로젝트 ID 리스트 (권한에 따라 필터링됨, null이면 전체)
+     * @param startDate 계약 시작일 검색 범위 시작
+     * @param endDate 계약 시작일 검색 범위 종료
+     * @param status 프로젝트 상태
+     * @param sortOrder 정렬 조건
+     * @param cursor 커서
+     * @param size 페이지 크기
+     * @return 페이징된 프로젝트 목록
+     */
+    public List<Project> findProjectsWithPaging(List<Long> projectIds, LocalDate startDate, LocalDate endDate,
+            Status status, ProjectListRequest.SortOrder sortOrder, Long cursor, int size) {
+
+        return projectRepository.findProjectsWithPaging(projectIds, startDate, endDate,
+                status, sortOrder, cursor, size);
     }
 }

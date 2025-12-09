@@ -1,18 +1,24 @@
 package com.workhub.project.api;
 
 import com.workhub.global.response.ApiResponse;
-import com.workhub.project.dto.CreateProjectRequest;
-import com.workhub.project.dto.ProjectResponse;
-import com.workhub.project.dto.UpdateStatusRequest;
+import com.workhub.project.dto.request.CreateProjectRequest;
+import com.workhub.project.dto.request.UpdateStatusRequest;
+import com.workhub.project.dto.response.PagedProjectListResponse;
+import com.workhub.project.dto.response.ProjectListRequest;
+import com.workhub.project.dto.response.ProjectResponse;
+import com.workhub.project.entity.Status;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @Tag(name = "프로젝트", description = "프로젝트 관리 API")
 public interface ProjectApi {
@@ -148,4 +154,49 @@ public interface ProjectApi {
             @Parameter(description = "삭제할 프로젝트 ID", required = true)
             @PathVariable("projectId") Long projectId
     );
+
+    @Operation(
+            summary = "프로젝트 목록 조회",
+            description = "페이징, 필터링, 정렬이 적용된 프로젝트 목록을 조회합니다. 무한 스크롤을 지원하며, 권한에 따라 조회 범위가 달라집니다. (ADMIN: 전체, CLIENT/DEVELOPER: 자신이 속한 프로젝트만)"
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "프로젝트 목록 조회 성공",
+                    content = @Content(schema = @Schema(implementation = PagedProjectListResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 (유효하지 않은 파라미터)"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "인증 오류 (로그인 필요)"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류 (프로젝트 목록 조회 실패)"
+            )
+    })
+    @GetMapping("/list")
+    ResponseEntity<ApiResponse<PagedProjectListResponse>> getProjects(
+            @Parameter(description = "계약 시작일 검색 범위 시작 (기본값: 1년 전)", required = false)
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+
+            @Parameter(description = "계약 시작일 검색 범위 종료 (기본값: 현재 날짜)", required = false)
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+
+            @Parameter(description = "프로젝트 상태 필터 (기본값: 전체)", required = false)
+            @RequestParam(required = false) Status status,
+
+            @Parameter(description = "정렬 조건 (LATEST: 최신순, OLDEST: 오래된순, 기본값: LATEST)", required = false)
+            @RequestParam(required = false) ProjectListRequest.SortOrder sortOrder,
+
+            @Parameter(description = "커서 (마지막 조회한 projectId, 무한 스크롤용)", required = false)
+            @RequestParam(required = false) Long cursor,
+
+            @Parameter(description = "페이지 크기 (기본값: 10, 최대: 100)", required = false)
+            @RequestParam(required = false) Integer size
+    );
+
 }
