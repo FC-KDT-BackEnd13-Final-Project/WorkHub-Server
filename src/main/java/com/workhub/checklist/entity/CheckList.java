@@ -1,5 +1,6 @@
 package com.workhub.checklist.entity;
 
+import com.workhub.checklist.dto.CheckListCreateRequest;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +20,7 @@ public class CheckList {
     @Column(name = "check_list_id")
     private Long checkListId;
 
-    @Column(name = "check_list_description", length = 50, nullable = false)
+    @Column(name = "check_list_description", length = 500, nullable = false)
     private String checkListDescription;
 
     @Column(name = "project_node_id")
@@ -27,5 +28,13 @@ public class CheckList {
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
+
+    public static CheckList of(CheckListCreateRequest request, Long userId, Long projectNodeId) {
+        return CheckList.builder()
+                .checkListDescription(request.description())
+                .projectNodeId(projectNodeId)
+                .userId(userId)
+                .build();
+    }
 
 }

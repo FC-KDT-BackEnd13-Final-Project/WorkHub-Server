@@ -1,5 +1,6 @@
 package com.workhub.checklist.entity;
 
+import com.workhub.checklist.dto.CheckListItemRequest;
 import com.workhub.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,7 +26,7 @@ public class CheckListItem extends BaseTimeEntity {
     @Column(name = "item_title", length = 50, nullable = false)
     private String itemTitle;
 
-    @Column(name = "item_order")
+    @Column(name = "item_order", nullable = false)
     private Integer itemOrder;
 
     @Column(name = "confirm")
@@ -42,4 +43,15 @@ public class CheckListItem extends BaseTimeEntity {
 
     @Column(name = "user_id")
     private Long userId;
+
+    public static CheckListItem of(Long checkListId, CheckListItemRequest request, Long userId) {
+        return CheckListItem.builder()
+                .itemTitle(request.itemTitle())
+                .itemOrder(request.itemOrder())
+                .checkListId(checkListId)
+                .templateId(request.templateId())
+                .userId(userId)
+                .confirm(false)
+                .build();
+    }
 }

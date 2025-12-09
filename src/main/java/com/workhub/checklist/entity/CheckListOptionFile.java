@@ -11,14 +11,14 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "check_list_item_file")
+@Table(name = "check_list_option_file")
 @Entity
-public class CheckListItemFile extends BaseTimeEntity {
+public class CheckListOptionFile extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "check_list_item_file_id")
-    private Long checkListItemFileId;
+    @Column(name = "check_list_option_file_id")
+    private Long checkListOptionFileId;
 
     @Column(name = "file_url", length = 255, nullable = false)
     private String fileUrl;
@@ -29,6 +29,23 @@ public class CheckListItemFile extends BaseTimeEntity {
     @Column(name = "file_order")
     private Integer fileOrder;
 
-    @Column(name = "check_list_item_id", nullable = false)
-    private Long checkListItemId;
+    @Column(name = "check_list_option_id", nullable = false)  // Option과 연결
+    private Long checkListOptionId;
+
+    public static CheckListOptionFile of(Long checkListOptionId, String fileUrl, Integer fileOrder) {
+        return CheckListOptionFile.builder()
+                .fileUrl(fileUrl)
+                .fileName(extractFileName(fileUrl))
+                .fileOrder(fileOrder)
+                .checkListOptionId(checkListOptionId)
+                .build();
+    }
+
+    private static String extractFileName(String fileUrl) {
+        if (fileUrl == null || fileUrl.isEmpty()) {
+            return "unknown";
+        }
+        int lastSlashIndex = fileUrl.lastIndexOf('/');
+        return lastSlashIndex != -1 ? fileUrl.substring(lastSlashIndex + 1) : fileUrl;
+    }
 }
