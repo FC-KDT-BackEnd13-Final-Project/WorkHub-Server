@@ -2,8 +2,8 @@ package com.workhub.projectNotification.service;
 
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
+import com.workhub.projectNotification.dto.NotificationPublishRequest;
 import com.workhub.projectNotification.dto.NotificationResponse;
-import com.workhub.projectNotification.entity.NotificationType;
 import com.workhub.projectNotification.entity.ProjectNotification;
 import com.workhub.projectNotification.repository.ProjectNotificationRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,29 +29,12 @@ public class ProjectNotificationService {
      * 알림 저장 후 SSE로 즉시 푸시.
      * (Redis Pub/Sub 연동 시 여기서 convertAndSend 추가)
      */
-    public NotificationResponse publish(Long receiverId, NotificationType type,
-                                        String title, String content,
-                                        String relatedUrl,
-                                        Long projectNodeId, Long postId, Long commentId, Long csQnaId,
-                                        Long projectId, Long csPostId) {
-        ProjectNotification saved = notificationRepository.save(
-                ProjectNotification.builder()
-                        .userId(receiverId)
-                        .notificationType(type)
-                        .title(title)
-                        .notificationContent(content)
-                        .relatedUrl(relatedUrl)
-                        .projectId(projectId)
-                        .projectNodeId(projectNodeId)
-                        .csPostId(csPostId)
-                        .postId(postId)
-                        .commentId(commentId)
-                        .csQnaId(csQnaId)
-                        .build()
-        );
-        NotificationResponse dto = NotificationResponse.from(saved);
-        emitterService.send(receiverId, dto); // SSE 푸시
-        return dto;
+    public NotificationResponse publish(NotificationPublishRequest request) {
+        ProjectNotification entity = request.toEntity();
+        ProjectNotification saved = notificationRepository.save(entity);
+        NotificationResponse response = NotificationResponse.from(saved);
+        emitterService.send(request.receiverId(), response); // SSE 푸시
+        return response;
     }
 
     @Transactional(readOnly = true)

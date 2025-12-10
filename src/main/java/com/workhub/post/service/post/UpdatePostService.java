@@ -76,18 +76,13 @@ public class UpdatePostService {
             return;
         }
         String relatedUrl = "/projects/" + projectId + "/nodes/" + post.getProjectNodeId() + "/posts/" + post.getPostId();
-        notificationPublisher.publishToUsers(
+        notificationPublisher.publishPost(
                 receivers,
                 NotificationType.POST_UPDATED,
                 post.getTitle(),
                 "게시글이 수정되었습니다.",
                 relatedUrl,
-                null,                  // projectId
-                null,                  // projectNodeId
-                post.getPostId(),      // postId
-                null,                  // commentId
-                null,                  // csQnaId
-                null                   // csPostId
+                post.getPostId()
         );
     }
 

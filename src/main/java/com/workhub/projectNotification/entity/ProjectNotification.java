@@ -62,4 +62,36 @@ public class ProjectNotification extends BaseTimeEntity {
     public void markRead() {
         this.readAt = LocalDateTime.now();
     }
+
+    /**
+     * 알림 엔티티 생성 팩토리.
+     * 서비스 레이어에서는 빌더를 직접 사용하지 않고 이 메서드로 생성한다.
+     */
+    public static ProjectNotification of(
+            Long userId,
+            NotificationType type,
+            String title,
+            String content,
+            String relatedUrl,
+            Long projectId,
+            Long projectNodeId,
+            Long postId,
+            Long commentId,
+            Long csQnaId,
+            Long csPostId
+    ) {
+        return ProjectNotification.builder()
+                .userId(userId)
+                .notificationType(type)
+                .title(title)
+                .notificationContent(content)
+                .relatedUrl(relatedUrl)
+                .projectId(projectId)
+                .projectNodeId(projectNodeId)
+                .postId(postId)
+                .commentId(commentId)
+                .csQnaId(csQnaId)
+                .csPostId(csPostId)
+                .build();
+    }
 }

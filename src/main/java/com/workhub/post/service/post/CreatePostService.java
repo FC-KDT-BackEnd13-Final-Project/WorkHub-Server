@@ -119,20 +119,8 @@ public class CreatePostService {
         String content = "새 게시글이 등록되었습니다.";
 
         memberIds.forEach(receiverId ->
-                notificationPublisher.publishToUsers(
-                        Set.of(receiverId),
-                        NotificationType.POST_CREATED,
-                        post.getTitle(),
-                        content,
-                        relatedUrl,
-                        null,                  // projectId
-                        null,                  // projectNodeId
-                        post.getPostId(),      // postId
-                        null,                  // commentId
-                        null,                  // csQnaId
-                        null                   // csPostId
-                )
-        );
+                notificationPublisher.publishPost(Set.of(receiverId), NotificationType.POST_CREATED,
+                        post.getTitle(), content, relatedUrl,post.getPostId()));
     }
 
     private Set<Long> getProjectMemberIds(Long projectId) {
