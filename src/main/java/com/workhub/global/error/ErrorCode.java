@@ -67,6 +67,8 @@ public enum ErrorCode {
     INVALID_COMMENT_CONTENT(HttpStatus.BAD_REQUEST, "PO-013", "댓글 내용이 비어있습니다."),
     NOT_EXISTS_COMMENT(HttpStatus.BAD_REQUEST, "PO-014", "존재하지 않는 댓글입니다."),
     NOT_MATCHED_COMMENT_POST(HttpStatus.BAD_REQUEST, "PO-015", "잘못된 게시글의 댓글입니다."),
+    INVALID_POST_FILE_CREATE(HttpStatus.BAD_REQUEST, "PO-010", "파일 URL이 비어있습니다."),
+
 
 
     // CS 게시판
@@ -106,11 +108,19 @@ public enum ErrorCode {
     DEV_MEMBER_HISTORY_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PR-006", "개발사 멤버 히스토리 저장에 실패했습니다."),
     PROJECT_NOT_FOUND(HttpStatus.BAD_REQUEST, "PR-007", "프로젝트를 찾을 수 없습니다."),
     PROJECT_HISTORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "PR-008", "프로젝트 히스토리를 찾을 수 없습니다."),
+    NOT_EXISTS_DEV_MEMBER(HttpStatus.BAD_REQUEST, "PR-009", "해당 프로젝트를 담당하는 개발자가 아닙니다."),
+    NOT_PROJECT_MEMBER(HttpStatus.FORBIDDEN, "PR-010", "해당 프로젝트의 멤버가 아닙니다."),
 
     // 프로젝트 노드
     PROJECT_NODE_NOT_FOUND(HttpStatus.NOT_FOUND, "PN-001", "프로젝트 노드를 찾을 수 없습니다."),
     PROJECT_NODE_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PN-002", "프로젝트 노드 저장에 실패했습니다."),
-    PROJECT_NODE_HISTORY_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PN-003", "프로젝트 노드 히스토리 저장에 실패했습니다.");
+    PROJECT_NODE_HISTORY_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PN-003", "프로젝트 노드 히스토리 저장에 실패했습니다."),
+
+    // 체크리스트
+    NOT_EXISTS_CHECK_LIST(HttpStatus.BAD_REQUEST, "CH-001", "존재하지 않는 체크리스트입니다."),
+    ALREADY_EXISTS_CHECK_LIST(HttpStatus.BAD_REQUEST, "CH-002", "이미 체크리스트가 존재합니다."),
+    INVALID_CHECK_LIST_ITEM_ORDER(HttpStatus.BAD_REQUEST, "CH-003", "항목 순서가 중복될 수 없습니다."),
+    INVALID_CHECK_LIST_OPTION_ORDER(HttpStatus.BAD_REQUEST, "CH-004", "선택지 순서가 중복될 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String errorCode;

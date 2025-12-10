@@ -1,4 +1,4 @@
-package com.workhub.project.dto;
+package com.workhub.project.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -15,9 +15,9 @@ public record CreateProjectRequest(
         @NotEmpty
         Long company,
         @NotEmpty
-        List<Long> managerNames,
+        List<Long> managerIds,
         @NotEmpty
-        List<Long> developerNames,
+        List<Long> developerIds,
         @NotEmpty
         LocalDate starDate,
         @NotEmpty
