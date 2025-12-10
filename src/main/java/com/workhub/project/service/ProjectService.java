@@ -3,8 +3,13 @@ package com.workhub.project.service;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.project.dto.response.ProjectListRequest;
-import com.workhub.project.entity.*;
-import com.workhub.project.repository.*;
+import com.workhub.project.entity.Project;
+import com.workhub.project.entity.ProjectClientMember;
+import com.workhub.project.entity.ProjectDevMember;
+import com.workhub.project.entity.Status;
+import com.workhub.project.repository.ClientMemberRepository;
+import com.workhub.project.repository.DevMemberRepository;
+import com.workhub.project.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -74,6 +79,55 @@ public class ProjectService {
         return devMemberRepository.findByProjectIdIn(projectIds);
     }
 
+    public List<ProjectClientMember> getClientMemberByProjectId(Long projectId) {
+        return clientMemberRepository.findByProjectIdIn(List.of(projectId));
+    }
+
+    public List<ProjectDevMember> getDevMemberByProjectId(Long projectId) {
+        return devMemberRepository.findByProjectIdIn(List.of(projectId));
+    }
+
+    public void validateDevMemberForProject(Long projectId, Long devMemberId) {
+        if(!devMemberRepository.existsByProjectIdAndUserId(projectId, devMemberId)) {
+            throw new BusinessException(ErrorCode.NOT_EXISTS_DEV_MEMBER);
+        }
+    }
+
+    public void validateProjectMember(Long projectId, Long userId) {
+        boolean isDevMember = devMemberRepository.existsByProjectIdAndUserId(projectId, userId);
+        boolean isClientMember = clientMemberRepository.existsByProjectIdAndUserId(projectId, userId);
+
+        if (!isDevMember && !isClientMember) {
+            throw new BusinessException(ErrorCode.NOT_PROJECT_MEMBER);
+        }
+    }
+
+    /**
+     * 클라이언트 멤버를 저장
+     * @param userIds 클라이언트 멤버 사용자 ID 리스트
+     * @param projectId 프로젝트 ID
+     * @return 저장된 클라이언트 멤버 리스트
+     */
+    public List<ProjectClientMember> saveClientMembers(List<Long> userIds, Long projectId) {
+        List<ProjectClientMember> clientMembers = userIds.stream()
+                .map(userId -> ProjectClientMember.of(userId, projectId))
+                .toList();
+        return saveProjectClientMember(clientMembers);
+    }
+
+    /**
+     * 개발사 멤버를 저장
+     * @param userIds 개발사 멤버 사용자 ID 리스트
+     * @param projectId 프로젝트 ID
+     * @return 저장된 개발사 멤버 리스트
+     */
+    public List<ProjectDevMember> saveDevMembers(List<Long> userIds, Long projectId) {
+        List<ProjectDevMember> devMembers = userIds.stream()
+                .map(userId -> ProjectDevMember.of(userId, projectId))
+                .toList();
+        return saveProjectDevMember(devMembers);
+    }
+
     /**
      * 페이징, 필터링, 정렬이 적용된 프로젝트 조회
      *
@@ -87,7 +141,7 @@ public class ProjectService {
      * @return 페이징된 프로젝트 목록
      */
     public List<Project> findProjectsWithPaging(List<Long> projectIds, LocalDate startDate, LocalDate endDate,
-            Status status, ProjectListRequest.SortOrder sortOrder, Long cursor, int size) {
+                                                Status status, ProjectListRequest.SortOrder sortOrder, Long cursor, int size) {
 
         return projectRepository.findProjectsWithPaging(projectIds, startDate, endDate,
                 status, sortOrder, cursor, size);

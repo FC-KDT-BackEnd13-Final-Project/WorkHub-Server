@@ -39,7 +39,7 @@ public class SecurityConfig {
                 // 세션 관리 정책
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                        .maximumSessions(1)
+                        .maximumSessions(10)
                         .maxSessionsPreventsLogin(false)
                 )
                 // 로그아웃 설정
@@ -51,10 +51,15 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/admin/users/login").permitAll()
+
                         .requestMatchers("/api/v1/projects/list").authenticated()
-                        .requestMatchers("/api/v1/admin/users/**").hasRole("ADMIN")
-//                        .requestMatchers("/api/v1/projects/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/projects/{projectId}/nodes/**").authenticated()
+                        .requestMatchers("/api/v1/projects/{projectId}/nodes/{nodeId}/**").authenticated()
                         .requestMatchers("/api/v1/auth/passwordReset/**").authenticated()
+
+                        .requestMatchers("/api/v1/projects/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/admin/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/projects/**").hasRole("ADMIN")
                         .anyRequest().permitAll()
                 );
 
@@ -77,7 +82,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOriginPatterns(List.of(
-                "https://work-hub-fe.vercel.app"
+                "https://work-hub-fe.vercel.app",
+                "http://localhost:3000"
         ));
         configuration.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "DELETE", "PATCH"
