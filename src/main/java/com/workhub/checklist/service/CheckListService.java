@@ -125,7 +125,6 @@ public class CheckListService {
 
     /**
      * CheckList의 전체 계층 구조를 효율적으로 조회한다.
-     * QueryDSL을 활용하여 N+1 문제를 방지한다.
      *
      * @param checkListId 체크리스트 ID
      * @return 체크리스트 상세 정보
