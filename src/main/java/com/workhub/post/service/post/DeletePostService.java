@@ -5,14 +5,19 @@ import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.entity.ActionType;
 import com.workhub.global.entity.HistoryType;
 import com.workhub.global.history.HistoryRecorder;
+import com.workhub.global.notification.NotificationPublisher;
+import com.workhub.global.notification.NotificationTargetFinder;
 import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostFile;
 import com.workhub.post.dto.post.PostHistorySnapshot;
 import com.workhub.post.entity.PostLink;
 import com.workhub.post.service.PostValidator;
+import com.workhub.projectNotification.entity.NotificationType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +27,8 @@ public class DeletePostService {
     private final PostService postService;
     private final PostValidator postValidator;
     private final HistoryRecorder historyRecorder;
+    private final NotificationPublisher notificationPublisher;
+    private final NotificationTargetFinder notificationTargetFinder;
 
 
     /**
@@ -43,6 +50,7 @@ public class DeletePostService {
         }
         historyRecorder.recordHistory(HistoryType.POST, target.getPostId(), ActionType.DELETE, PostHistorySnapshot.from(target));
         deleteRecursively(target);
+        notifyPostDeleted(projectId, target);
     }
 
     /**
@@ -59,5 +67,29 @@ public class DeletePostService {
                     .forEach(PostLink::markDeleted);
         }
         postService.findChildren(post.getPostId()).forEach(this::deleteRecursively);
+    }
+
+    /**
+     * 게시글 삭제 시 프로젝트 멤버에게 알림을 전송한다.
+     */
+    private void notifyPostDeleted(Long projectId, Post post) {
+        Set<Long> receivers = notificationTargetFinder.findAllMembersOfProject(projectId);
+        if (receivers.isEmpty()) {
+            return;
+        }
+        String relatedUrl = "/projects/" + projectId + "/nodes/" + post.getProjectNodeId() + "/posts/" + post.getPostId();
+        notificationPublisher.publishToUsers(
+                receivers,
+                NotificationType.POST_DELETED,
+                post.getTitle(),
+                "게시글이 삭제되었습니다.",
+                relatedUrl,
+                null,                  // projectId
+                null,                  // projectNodeId
+                post.getPostId(),      // postId
+                null,                  // commentId
+                null,                  // csQnaId
+                null                   // csPostId
+        );
     }
 }
