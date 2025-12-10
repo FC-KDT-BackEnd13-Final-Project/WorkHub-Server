@@ -41,11 +41,17 @@ public class ProjectNotification extends BaseTimeEntity {
     @Column(name = "user_id")
     private Long userId;
 
+    @Column(name = "project_id")
+    private Long projectId;
+
     @Column(name = "project_node_id")
     private Long projectNodeId;
 
     @Column(name = "cs_qna_id")
     private Long csQnaId;
+
+    @Column(name = "cs_post_id")
+    private Long csPostId;
 
     @Column(name = "post_id")
     private Long postId;

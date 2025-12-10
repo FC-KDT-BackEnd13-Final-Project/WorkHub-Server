@@ -18,7 +18,7 @@ import com.workhub.project.entity.ProjectClientMember;
 import com.workhub.project.entity.ProjectDevMember;
 import com.workhub.project.service.ProjectService;
 import com.workhub.projectNotification.entity.NotificationType;
-import com.workhub.projectNotification.service.ProjectNotificationService;
+import com.workhub.global.notification.NotificationPublisher;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,7 +37,7 @@ public class CreatePostService {
     private final PostValidator postValidator;
     private final HistoryRecorder historyRecorder;
     private final ProjectService projectService;
-    private final ProjectNotificationService notificationService;
+    private final NotificationPublisher notificationPublisher;
 
     /**
      * 게시글 생성 시 프로젝트 상태와 부모 게시글 유효성을 검증한 뒤 저장한다.
@@ -119,9 +119,19 @@ public class CreatePostService {
         String content = "새 게시글이 등록되었습니다.";
 
         memberIds.forEach(receiverId ->
-                notificationService.publish(receiverId, NotificationType.POST_CREATED,
-                        post.getTitle(), content, relatedUrl,
-                        null, post.getPostId(), null, null)
+                notificationPublisher.publishToUsers(
+                        Set.of(receiverId),
+                        NotificationType.POST_CREATED,
+                        post.getTitle(),
+                        content,
+                        relatedUrl,
+                        null,                  // projectId
+                        null,                  // projectNodeId
+                        post.getPostId(),      // postId
+                        null,                  // commentId
+                        null,                  // csQnaId
+                        null                   // csPostId
+                )
         );
     }
 

@@ -32,7 +32,8 @@ public class ProjectNotificationService {
     public NotificationResponse publish(Long receiverId, NotificationType type,
                                         String title, String content,
                                         String relatedUrl,
-                                        Long projectNodeId, Long postId, Long commentId, Long csQnaId) {
+                                        Long projectNodeId, Long postId, Long commentId, Long csQnaId,
+                                        Long projectId, Long csPostId) {
         ProjectNotification saved = notificationRepository.save(
                 ProjectNotification.builder()
                         .userId(receiverId)
@@ -40,7 +41,9 @@ public class ProjectNotificationService {
                         .title(title)
                         .notificationContent(content)
                         .relatedUrl(relatedUrl)
+                        .projectId(projectId)
                         .projectNodeId(projectNodeId)
+                        .csPostId(csPostId)
                         .postId(postId)
                         .commentId(commentId)
                         .csQnaId(csQnaId)

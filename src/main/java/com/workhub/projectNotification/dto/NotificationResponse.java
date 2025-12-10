@@ -11,10 +11,12 @@ public record NotificationResponse(
         String title,
         String content,
         String relatedUrl,
+        Long projectId,
         Long projectNodeId,
         Long postId,
         Long commentId,
         Long csQnaId,
+        Long csPostId,
         boolean read,
         LocalDateTime createdAt
 ) {
@@ -25,10 +27,12 @@ public record NotificationResponse(
                 n.getTitle(),
                 n.getNotificationContent(),
                 n.getRelatedUrl(),
+                n.getProjectId(),
                 n.getProjectNodeId(),
                 n.getPostId(),
                 n.getCommentId(),
                 n.getCsQnaId(),
+                n.getCsPostId(),
                 n.getReadAt() != null,
                 n.getCreatedAt()
         );
