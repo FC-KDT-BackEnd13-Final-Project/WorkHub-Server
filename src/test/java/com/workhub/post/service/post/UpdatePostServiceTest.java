@@ -11,6 +11,8 @@ import com.workhub.post.repository.post.PostFileRepository;
 import com.workhub.post.repository.post.PostLinkRepository;
 import com.workhub.post.repository.post.PostRepository;
 import com.workhub.post.service.PostValidator;
+import com.workhub.global.notification.NotificationPublisher;
+import com.workhub.global.notification.NotificationTargetFinder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,12 +49,17 @@ class UpdatePostServiceTest {
     PostValidator postValidator;
     @Mock
     HistoryRecorder historyRecorder;
+    @Mock
+    NotificationPublisher notificationPublisher;
+    @Mock
+    NotificationTargetFinder notificationTargetFinder;
 
     UpdatePostService updatePostService;
 
     @BeforeEach
     void setUp() {
-        updatePostService = new UpdatePostService(postService, postValidator, historyRecorder);
+        updatePostService = new UpdatePostService(postService, postValidator, historyRecorder,
+                notificationPublisher, notificationTargetFinder);
         given(postRepository.findByParentPostIdAndDeletedAtIsNull(anyLong())).willReturn(Collections.emptyList());
         given(postFileRepository.findByPostId(anyLong())).willReturn(Collections.emptyList());
         given(postLinkRepository.findByPostId(anyLong())).willReturn(Collections.emptyList());
