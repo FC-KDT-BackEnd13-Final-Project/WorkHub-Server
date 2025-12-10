@@ -7,7 +7,7 @@ import com.workhub.userTable.dto.CompanyListResponse;
 import com.workhub.userTable.dto.CompanyRegisterRequest;
 import com.workhub.userTable.dto.CompanyResponse;
 import com.workhub.userTable.entity.Company;
-import com.workhub.userTable.entity.Status;
+import com.workhub.userTable.entity.CompanyStatus;
 import com.workhub.userTable.repository.CompanyRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -101,7 +101,7 @@ class CompanyServiceTest {
                 .companyNumber(COMPANY_NUMBER)
                 .tel(COMPANY_TEL)
                 .address(COMPANY_ADDRESS)
-                .companystatus(Status.ACTIVE)
+                .companystatus(CompanyStatus.ACTIVE)
                 .build();
     }
 
@@ -113,7 +113,7 @@ class CompanyServiceTest {
         @DisplayName("전체 고객사 목록을 조회한다")
         void success() {
             Company company = persistedCompany();
-            given(companyRepository.findAll()).willReturn(List.of(company));
+            given(companyRepository.findAllByCompanystatus(CompanyStatus.ACTIVE)).willReturn(List.of(company));
 
             List<CompanyListResponse> responses = companyService.getCompanys();
 
@@ -122,7 +122,7 @@ class CompanyServiceTest {
                     .first()
                     .isEqualTo(CompanyListResponse.from(company));
 
-            verify(companyRepository).findAll();
+            verify(companyRepository).findAllByCompanystatus(CompanyStatus.ACTIVE);
         }
     }
 
@@ -134,24 +134,24 @@ class CompanyServiceTest {
         @DisplayName("ID로 고객사를 조회한다")
         void success() {
             Company company = persistedCompany();
-            given(companyRepository.findById(COMPANY_ID)).willReturn(Optional.of(company));
+            given(companyRepository.findByCompanyIdAndCompanystatus(COMPANY_ID, CompanyStatus.ACTIVE)).willReturn(Optional.of(company));
 
             CompanyDetailResponse response = companyService.getCompany(COMPANY_ID);
 
             assertThat(response).isEqualTo(CompanyDetailResponse.from(company));
-            verify(companyRepository).findById(COMPANY_ID);
+            verify(companyRepository).findByCompanyIdAndCompanystatus(COMPANY_ID, CompanyStatus.ACTIVE);
         }
 
         @Test
         @DisplayName("존재하지 않는 고객사면 예외를 던진다")
         void fail_notFound() {
-            given(companyRepository.findById(COMPANY_ID)).willReturn(Optional.empty());
+            given(companyRepository.findByCompanyIdAndCompanystatus(COMPANY_ID, CompanyStatus.ACTIVE)).willReturn(Optional.empty());
 
             assertThatThrownBy(() -> companyService.getCompany(COMPANY_ID))
                     .isInstanceOf(BusinessException.class)
                     .hasMessage(ErrorCode.Company_NOT_EXISTS.getMessage());
 
-            verify(companyRepository).findById(COMPANY_ID);
+            verify(companyRepository).findByCompanyIdAndCompanystatus(COMPANY_ID, CompanyStatus.ACTIVE);
         }
     }
 
@@ -167,7 +167,7 @@ class CompanyServiceTest {
 
             companyService.deleteCompany(COMPANY_ID);
 
-            assertThat(company.getCompanystatus()).isEqualTo(Status.INACTIVE);
+            assertThat(company.getCompanystatus()).isEqualTo(CompanyStatus.INACTIVE);
             assertThat(company.isDeleted()).isTrue();
             verify(companyRepository).findById(COMPANY_ID);
         }

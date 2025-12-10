@@ -35,14 +35,14 @@ public class Company extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "company_status", nullable = false)
-    private Status companystatus;
+    private CompanyStatus companystatus;
 
     public void markDeleted() {
-        this.companystatus = Status.INACTIVE;
+        this.companystatus = CompanyStatus.INACTIVE;
         markDeletedNow();
     }
 
-    public void updateStatus(Status status) {
+    public void updateStatus(CompanyStatus status) {
         this.companystatus = status;
     }
 
@@ -52,7 +52,7 @@ public class Company extends BaseTimeEntity {
                 .companyNumber(register.companyNumber())
                 .tel(register.tel())
                 .address(register.address())
-                .companystatus(Status.ACTIVE)
+                .companystatus(CompanyStatus.ACTIVE)
                 .build();
     }
 }

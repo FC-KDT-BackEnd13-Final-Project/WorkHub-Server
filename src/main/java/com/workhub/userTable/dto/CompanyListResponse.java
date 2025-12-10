@@ -1,7 +1,7 @@
 package com.workhub.userTable.dto;
 
 import com.workhub.userTable.entity.Company;
-import com.workhub.userTable.entity.Status;
+import com.workhub.userTable.entity.CompanyStatus;
 
 public record CompanyListResponse (
         Long companyId,
@@ -9,7 +9,7 @@ public record CompanyListResponse (
         String companyNumber,
         String tel,
         String address,
-        Status status
+        CompanyStatus status
 ){
     public static CompanyListResponse from(Company company){
         return new CompanyListResponse(

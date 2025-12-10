@@ -51,7 +51,7 @@ public interface CompanyApi {
                             schema = @Schema(implementation = CompanyListResponse.class))
             )
     })
-    List<CompanyListResponse> getUserTable();
+    List<CompanyListResponse> getCompanys();
 
     @Operation(
             summary = "고객사 상세 조회",

@@ -7,9 +7,9 @@ import com.workhub.userTable.dto.CompanyRegisterRequest;
 import com.workhub.userTable.dto.CompanyResponse;
 import com.workhub.userTable.entity.Company;
 import com.workhub.userTable.dto.CompanyDetailResponse;
-import com.workhub.userTable.entity.Status;
+import com.workhub.userTable.entity.CompanyStatus;
 import com.workhub.userTable.repository.CompanyRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -35,14 +35,16 @@ public class CompanyService {
             throw new BusinessException(ErrorCode.COMPANY_ALREADY_EXISTS);
         }
     }
+    @Transactional(readOnly = true)
     public List<CompanyListResponse> getCompanys() {
-        return companyRepository.findAll().stream()
+        return companyRepository.findAllByCompanystatus(CompanyStatus.ACTIVE).stream()
                 .map(CompanyListResponse::from)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public CompanyDetailResponse getCompany(Long companyId) {
-        Company company = companyRepository.findById(companyId)
+        Company company = companyRepository.findByCompanyIdAndCompanystatus(companyId, CompanyStatus.ACTIVE)
                 .orElseThrow(() -> new BusinessException(ErrorCode.Company_NOT_EXISTS));
         return CompanyDetailResponse.from(company);
     }
@@ -55,7 +57,7 @@ public class CompanyService {
     }
 
     @Transactional
-    public CompanyResponse updateCompanyStatus(Long companyId, Status status) {
+    public CompanyResponse updateCompanyStatus(Long companyId, CompanyStatus status) {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.Company_NOT_EXISTS));
         company.updateStatus(status);
