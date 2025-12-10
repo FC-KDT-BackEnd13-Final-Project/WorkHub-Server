@@ -7,23 +7,15 @@ import java.util.List;
 
 /**
  * 체크리스트 업데이트 요청 DTO
+ * - 부분 업데이트 지원
+ *   변경된 항목만 items 배열에 포함하여 전송
+ *   변경되지 않은 항목은 전송하지 않음 (기존 값 유지)
+ * - changeType 별 동작
+ *   CREATE: 새 항목 추가 (ID 없이 전송, title/content/url 필수)
+ *   UPDATE: 기존 항목 수정 (ID 필수, 변경할 필드만 포함, null인 필드는 기존 값 유지)
+ *   DELETE: 기존 항목 삭제 (ID만 필요)
  *
- * <h3>부분 업데이트 지원</h3>
- * <ul>
- *   <li>변경된 항목만 items 배열에 포함하여 전송</li>
- *   <li>변경되지 않은 항목은 전송하지 않음 (기존 값 유지)</li>
- * </ul>
- *
- * <h3>changeType 별 동작</h3>
- * <ul>
- *   <li><b>CREATE</b>: 새 항목 추가 (ID 없이 전송, title/content/url 필수)</li>
- *   <li><b>UPDATE</b>: 기존 항목 수정 (ID 필수, 변경할 필드만 포함, null인 필드는 기존 값 유지)</li>
- *   <li><b>DELETE</b>: 기존 항목 삭제 (ID만 필요)</li>
- * </ul>
- *
- * <h3>요청 예시</h3>
- * <pre>{@code
- * {
+ * - 요청 예시
  *   "description": "수정된 설명",
  *   "items": [
  *     {
@@ -43,7 +35,6 @@ import java.util.List;
  *     }
  *   ]
  * }
- * }</pre>
  *
  * @param description 체크리스트 설명 (선택, 최대 500자)
  * @param items 변경할 항목 리스트 (변경된 항목만 포함)

@@ -15,9 +15,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "check_list_item")
-@NamedQueries({
-        @NamedQuery(name = "CheckListItem.findAll", query = "select c from CheckListItem c")
-})
 @Entity
 public class CheckListItem extends BaseTimeEntity {
 
