@@ -48,6 +48,7 @@ public enum ErrorCode {
 
     // 고객사
     COMPANY_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "CO-001", "이미 등록된 고객사입니다."),
+    Company_NOT_EXISTS(HttpStatus.BAD_REQUEST, "CO-002", "존재하지 않는 고객사입니다."),
 
     // 게시물
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "PO-001", "게시물을 찾을 수 없습니다."),
@@ -115,11 +116,26 @@ public enum ErrorCode {
     PROJECT_NODE_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PN-002", "프로젝트 노드 저장에 실패했습니다."),
     PROJECT_NODE_HISTORY_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PN-003", "프로젝트 노드 히스토리 저장에 실패했습니다."),
 
+    //알림
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NF-001", "알림을 찾을 수 없습니다."),
+
     // 체크리스트
     NOT_EXISTS_CHECK_LIST(HttpStatus.BAD_REQUEST, "CH-001", "존재하지 않는 체크리스트입니다."),
     ALREADY_EXISTS_CHECK_LIST(HttpStatus.BAD_REQUEST, "CH-002", "이미 체크리스트가 존재합니다."),
     INVALID_CHECK_LIST_ITEM_ORDER(HttpStatus.BAD_REQUEST, "CH-003", "항목 순서가 중복될 수 없습니다."),
-    INVALID_CHECK_LIST_OPTION_ORDER(HttpStatus.BAD_REQUEST, "CH-004", "선택지 순서가 중복될 수 없습니다.");
+    INVALID_CHECK_LIST_OPTION_ORDER(HttpStatus.BAD_REQUEST, "CH-004", "선택지 순서가 중복될 수 없습니다."),
+    CHECK_LIST_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "CH-005", "체크리스트 항목을 찾을 수 없습니다."),
+    CHECK_LIST_OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "CH-006", "체크리스트 선택지를 찾을 수 없습니다."),
+    CHECK_LIST_OPTION_FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "CH-007", "체크리스트 파일을 찾을 수 없습니다."),
+    INVALID_CHECK_LIST_UPDATE_COMMAND(HttpStatus.BAD_REQUEST, "CH-008", "지원하지 않는 체크리스트 작업 유형입니다."),
+
+    // 체크리스트 업데이트 검증
+    CHECK_LIST_CREATE_CANNOT_HAVE_ID(HttpStatus.BAD_REQUEST, "CH-009", "새로 생성하는 항목은 ID를 포함할 수 없습니다."),
+    CHECK_LIST_UPDATE_REQUIRES_ID(HttpStatus.BAD_REQUEST, "CH-010", "수정할 항목의 ID가 필요합니다."),
+    CHECK_LIST_DELETE_REQUIRES_ID(HttpStatus.BAD_REQUEST, "CH-011", "삭제할 항목의 ID가 필요합니다."),
+    CHECK_LIST_CREATE_REQUIRES_TITLE_AND_ORDER(HttpStatus.BAD_REQUEST, "CH-012", "새 항목 생성시 제목과 순서는 필수입니다."),
+    CHECK_LIST_CREATE_REQUIRES_CONTENT_AND_ORDER(HttpStatus.BAD_REQUEST, "CH-013", "새 선택지 생성시 내용과 순서는 필수입니다."),
+    CHECK_LIST_CREATE_REQUIRES_FILE_URL(HttpStatus.BAD_REQUEST, "CH-014", "새 파일 생성시 파일 URL은 필수입니다.");
 
     private final HttpStatus httpStatus;
     private final String errorCode;
