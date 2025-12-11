@@ -20,7 +20,6 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import java.util.Collections;
-import static org.mockito.BDDMockito.willDoNothing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -39,13 +38,15 @@ class DeleteCommentServiceTest {
     HistoryRecorder historyRecorder;
     @Mock
     PostValidator postValidator;
+    @Mock
+    CommentNotificationService commentNotificationService;
 
     @InjectMocks
     DeleteCommentService deleteCommentService;
 
     @BeforeEach
     void setUp() {
-        deleteCommentService = new DeleteCommentService(commentService, historyRecorder, postValidator);
+        deleteCommentService = new DeleteCommentService(commentService, historyRecorder, postValidator, commentNotificationService);
         given(postValidator.validatePostToProject(anyLong(), anyLong()))
                 .willReturn(Post.builder().build());
     }
