@@ -68,6 +68,7 @@ public class CheckListController implements CheckListApi {
         return ApiResponse.success(response, "체크리스트가 수정되었습니다.");
     }
 
+    @Override
     @PatchMapping("/{checkListId}/items/{checkListItemId}/status")
     @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<ApiResponse<CheckListItemStatus>> updateStatus(

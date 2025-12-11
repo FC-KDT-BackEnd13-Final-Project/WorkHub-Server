@@ -3,7 +3,6 @@ package com.workhub.global.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -53,10 +52,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/admin/users/login").permitAll()
 
-                        .requestMatchers(HttpMethod.GET, "/api/v1/projects/*/nodes/*/checkLists/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/projects/*/nodes/*/checkLists").hasAnyRole("DEVELOPER", "ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/v1/projects/*/nodes/*/checkLists").hasAnyRole("DEVELOPER", "ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/v1/projects/*/nodes/*/checkLists/*/items/*/status").hasRole("CLIENT")
+                        .requestMatchers("/api/v1/projects/*/nodes/*/checkLists/**").authenticated()
+                        .requestMatchers("/api/v1/projects/*/nodes/*/checkLists").hasAnyRole("DEVELOPER", "ADMIN")
+                        .requestMatchers( "/api/v1/projects/*/nodes/*/checkLists").hasAnyRole("DEVELOPER", "ADMIN")
+                        .requestMatchers( "/api/v1/projects/*/nodes/*/checkLists/*/items/*/status").hasRole("CLIENT")
 
                         .requestMatchers("/api/v1/projects/list").authenticated()
                         .requestMatchers("/api/v1/projects/{projectId}/nodes/**").authenticated()
@@ -65,7 +64,6 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/v1/projects/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/admin/users/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/projects/**").hasRole("ADMIN")
                         .anyRequest().permitAll()
                 );
 
