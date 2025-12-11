@@ -5,18 +5,15 @@ import com.workhub.global.entity.HistoryType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.history.HistoryRecorder;
-import com.workhub.global.notification.NotificationPublisher;
-import com.workhub.global.notification.NotificationTargetFinder;
-import com.workhub.post.entity.Post;
-import com.workhub.post.entity.PostFile;
-import com.workhub.post.entity.PostLink;
 import com.workhub.post.dto.post.PostHistorySnapshot;
 import com.workhub.post.dto.post.request.PostFileUpdateRequest;
 import com.workhub.post.dto.post.request.PostLinkUpdateRequest;
 import com.workhub.post.dto.post.request.PostUpdateRequest;
 import com.workhub.post.dto.post.response.PostResponse;
+import com.workhub.post.entity.Post;
+import com.workhub.post.entity.PostFile;
+import com.workhub.post.entity.PostLink;
 import com.workhub.post.service.PostValidator;
-import com.workhub.projectNotification.entity.NotificationType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,8 +29,7 @@ public class UpdatePostService {
     private final PostService postService;
     private final PostValidator postValidator;
     private final HistoryRecorder historyRecorder;
-    private final NotificationPublisher notificationPublisher;
-    private final NotificationTargetFinder notificationTargetFinder;
+    private final PostNotificationService postNotificationService;
 
 
     /**
@@ -62,28 +58,9 @@ public class UpdatePostService {
                 .filter(link -> link.getDeletedAt() == null)
                 .toList();
 
-        notifyPostUpdated(projectId, target);
+        postNotificationService.notifyPostUpdated(projectId, target);
 
         return PostResponse.from(target, visibleFiles, visibleLinks);
-    }
-
-    /**
-     * 게시글 수정 시 프로젝트 멤버에게 알림을 보낸다.
-     */
-    private void notifyPostUpdated(Long projectId, Post post) {
-        Set<Long> receivers = notificationTargetFinder.findAllMembersOfProject(projectId);
-        if (receivers.isEmpty()) {
-            return;
-        }
-        String relatedUrl = "/projects/" + projectId + "/nodes/" + post.getProjectNodeId() + "/posts/" + post.getPostId();
-        notificationPublisher.publishPost(
-                receivers,
-                NotificationType.POST_UPDATED,
-                post.getTitle(),
-                "게시글이 수정되었습니다.",
-                relatedUrl,
-                post.getPostId()
-        );
     }
 
     /**

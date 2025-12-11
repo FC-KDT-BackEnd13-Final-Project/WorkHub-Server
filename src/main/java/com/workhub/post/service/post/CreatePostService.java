@@ -14,19 +14,11 @@ import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostFile;
 import com.workhub.post.entity.PostLink;
 import com.workhub.post.service.PostValidator;
-import com.workhub.project.entity.ProjectClientMember;
-import com.workhub.project.entity.ProjectDevMember;
-import com.workhub.project.service.ProjectService;
-import com.workhub.projectNotification.entity.NotificationType;
-import com.workhub.global.notification.NotificationPublisher;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -36,8 +28,7 @@ public class CreatePostService {
     private final PostService postService;
     private final PostValidator postValidator;
     private final HistoryRecorder historyRecorder;
-    private final ProjectService projectService;
-    private final NotificationPublisher notificationPublisher;
+    private final PostNotificationService postNotificationService;
 
     /**
      * 게시글 생성 시 프로젝트 상태와 부모 게시글 유효성을 검증한 뒤 저장한다.
@@ -65,7 +56,7 @@ public class CreatePostService {
         List<PostLink> savedLinks = savePostLinks(savedPost.getPostId(), request.links());
 
         historyRecorder.recordHistory(HistoryType.POST, savedPost.getPostId(), ActionType.CREATE, PostHistorySnapshot.from(savedPost));
-        notifyProjectMembers(projectId, savedPost);
+        postNotificationService.notifyProjectMembers(projectId, savedPost);
 
         return PostResponse.from(savedPost, savedFiles, savedLinks);
     }
@@ -102,33 +93,5 @@ public class CreatePostService {
                 .map(request -> PostLink.of(postId, request.referenceLink(), request.linkDescription()))
                 .toList();
         return postService.savePostLinks(links);
-    }
-
-    /**
-     * 프로젝트 참여자 모두에게 게시글 생성 알림을 전송한다.
-     *
-     * @param projectId 프로젝트 ID
-     * @param post 생성된 게시글
-     */
-    private void notifyProjectMembers(Long projectId, Post post) {
-        Set<Long> memberIds = getProjectMemberIds(projectId);
-        if (memberIds.isEmpty()) {
-            return;
-        }
-        String relatedUrl = "/projects/" + projectId + "/nodes/" + post.getProjectNodeId() + "/posts/" + post.getPostId();
-        String content = "새 게시글이 등록되었습니다.";
-
-        memberIds.forEach(receiverId ->
-                notificationPublisher.publishPost(Set.of(receiverId), NotificationType.POST_CREATED,
-                        post.getTitle(), content, relatedUrl,post.getPostId()));
-    }
-
-    private Set<Long> getProjectMemberIds(Long projectId) {
-        List<ProjectClientMember> clients = projectService.getClientMemberByProjectIdIn(List.of(projectId));
-        List<ProjectDevMember> devs = projectService.getDevMemberByProjectIdIn(List.of(projectId));
-        return Stream.concat(
-                        clients.stream().map(ProjectClientMember::getUserId),
-                        devs.stream().map(ProjectDevMember::getUserId))
-                .collect(Collectors.toSet());
     }
 }
