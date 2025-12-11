@@ -12,6 +12,7 @@ import com.workhub.checklist.entity.CheckList;
 import com.workhub.checklist.entity.CheckListItem;
 import com.workhub.checklist.entity.CheckListOption;
 import com.workhub.checklist.entity.CheckListOptionFile;
+import com.workhub.checklist.service.checkList.UpdateCheckListService;
 import com.workhub.global.entity.ActionType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
