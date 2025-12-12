@@ -1,7 +1,7 @@
 package com.workhub.post.service.post;
 
 import com.workhub.file.dto.FileUploadResponse;
-import com.workhub.file.service.S3Service;
+import com.workhub.file.service.FileService;
 import com.workhub.global.entity.ActionType;
 import com.workhub.global.entity.HistoryType;
 import com.workhub.global.error.ErrorCode;
@@ -33,7 +33,7 @@ public class CreatePostService {
     private final PostValidator postValidator;
     private final HistoryRecorder historyRecorder;
     private final PostNotificationService postNotificationService;
-    private final S3Service s3Service;
+    private final FileService fileService;
 
     /**
      * 게시글 생성 시 프로젝트 상태와 부모 게시글 유효성을 검증한 뒤 저장한다.
@@ -75,7 +75,7 @@ public class CreatePostService {
         }
 
         // S3에 파일 업로드
-        List<FileUploadResponse> uploadFiles = s3Service.uploadFiles(files);
+        List<FileUploadResponse> uploadFiles = fileService.uploadFiles(files);
 
         // PostFile 엔티티 생성 및 저장
         List<PostFile> postFiles = IntStream.range(0, uploadFiles.size())

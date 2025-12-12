@@ -33,7 +33,7 @@ class UserControllerTest {
     private UserService userService;
 
     @InjectMocks
-    private UserController userController;
+    private UserAdminController userController;
 
     @Test
     @DisplayName("본인이 비밀번호 변경을 요청하면 서비스가 호출되고 성공 응답을 반환한다")

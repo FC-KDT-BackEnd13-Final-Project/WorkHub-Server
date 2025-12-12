@@ -34,6 +34,9 @@ public class UserTable extends BaseTimeEntity {
     @Column(name = "phone", nullable = false, length = 12)
     private String phone;
 
+    @Column(name = "profile_img")
+    private String profileImg;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "user_role", nullable = false)
     private UserRole role;
@@ -76,5 +79,9 @@ public class UserTable extends BaseTimeEntity {
                 .companyId(register.companyId())
                 .status(Status.ACTIVE)
                 .build();
+    }
+
+    public void updateProfile(String newProfile) {
+        this.profileImg = newProfile;
     }
 }

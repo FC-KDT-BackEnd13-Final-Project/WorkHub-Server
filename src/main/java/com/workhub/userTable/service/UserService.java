@@ -42,6 +42,7 @@ public class UserService {
 
     }
 
+    @Transactional
     public UserTable getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_EXISTS));
