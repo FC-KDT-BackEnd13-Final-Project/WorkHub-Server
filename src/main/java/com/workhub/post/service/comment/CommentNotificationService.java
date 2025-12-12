@@ -20,14 +20,6 @@ public class CommentNotificationService {
         publishComment(projectId, post, comment, "댓글이 생성되었습니다.");
     }
 
-    protected void notifyCommentUpdated(Long projectId, Post post, PostComment comment) {
-        publishComment(projectId, post, comment, "댓글이 수정되었습니다.");
-    }
-
-    protected void notifyCommentDeleted(Long projectId, Post post, PostComment comment) {
-        publishComment(projectId, post, comment, "댓글이 삭제되었습니다.");
-    }
-
     /**
      * 댓글 알림 공통 처리.
      */

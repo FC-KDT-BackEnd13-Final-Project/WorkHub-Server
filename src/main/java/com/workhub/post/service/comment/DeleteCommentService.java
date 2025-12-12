@@ -6,7 +6,6 @@ import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.history.HistoryRecorder;
 import com.workhub.post.dto.comment.CommentHistorySnapshot;
-import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostComment;
 import com.workhub.post.service.PostValidator;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ public class DeleteCommentService {
     private final CommentService commentService;
     private final HistoryRecorder historyRecorder;
     private final PostValidator postValidator;
-    private final CommentNotificationService commentNotificationService;
 
     /**
      * 댓글과 자식 댓글을 삭제(소프트 딜리트)하고 히스토리를 기록한다.
@@ -34,7 +32,7 @@ public class DeleteCommentService {
      * @return 삭제된 댓글의 게시글 ID
      */
     public Long delete(Long projectId, Long postId, Long commentId, Long userId) {
-        Post post = postValidator.validatePostToProject(postId, projectId);
+        postValidator.validatePostToProject(postId, projectId);
         PostComment postComment = commentService.findByCommentAndMatchedUserId(commentId, userId);
 
         if (!postId.equals(postComment.getPostId())) {
@@ -46,7 +44,6 @@ public class DeleteCommentService {
         }
 
         deleteWithChildren(postComment);
-        commentNotificationService.notifyCommentDeleted(projectId, post, postComment);
 
         return postComment.getPostId();
     }

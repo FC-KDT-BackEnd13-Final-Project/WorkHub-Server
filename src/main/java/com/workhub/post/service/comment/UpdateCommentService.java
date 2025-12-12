@@ -8,7 +8,6 @@ import com.workhub.global.history.HistoryRecorder;
 import com.workhub.post.dto.comment.CommentHistorySnapshot;
 import com.workhub.post.dto.comment.request.CommentUpdateRequest;
 import com.workhub.post.dto.comment.response.CommentResponse;
-import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostComment;
 import com.workhub.post.service.PostValidator;
 import jakarta.transaction.Transactional;
@@ -22,7 +21,6 @@ public class UpdateCommentService {
     private final CommentService commentService;
     private final HistoryRecorder historyRecorder;
     private final PostValidator postValidator;
-    private final CommentNotificationService commentNotificationService;
 
     /**
      * 댓글을 수정하고 변경 전 내용을 히스토리에 저장한다.
@@ -35,7 +33,7 @@ public class UpdateCommentService {
      * @return 수정된 댓글 응답
      */
     public CommentResponse update(Long projectId, Long postCommentId, Long postId, Long userId, CommentUpdateRequest commentUpdateRequest) {
-        Post post = postValidator.validatePostToProject(postId, projectId);
+        postValidator.validatePostToProject(postId, projectId);
         PostComment postComment = commentService.findByCommentAndMatchedUserId(postCommentId, userId);
 
         validateCommentBelongs(postComment, postId);
@@ -43,7 +41,6 @@ public class UpdateCommentService {
         snapshotAndRecordHistory(postComment, ActionType.UPDATE);
 
         postComment.updateContent(commentUpdateRequest.commentContext());
-        commentNotificationService.notifyCommentUpdated(projectId, post, postComment);
         return CommentResponse.from(postComment);
     }
 

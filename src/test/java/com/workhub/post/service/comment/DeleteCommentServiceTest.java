@@ -38,15 +38,12 @@ class DeleteCommentServiceTest {
     HistoryRecorder historyRecorder;
     @Mock
     PostValidator postValidator;
-    @Mock
-    CommentNotificationService commentNotificationService;
 
     @InjectMocks
     DeleteCommentService deleteCommentService;
 
     @BeforeEach
     void setUp() {
-        deleteCommentService = new DeleteCommentService(commentService, historyRecorder, postValidator, commentNotificationService);
         given(postValidator.validatePostToProject(anyLong(), anyLong()))
                 .willReturn(Post.builder().build());
     }
