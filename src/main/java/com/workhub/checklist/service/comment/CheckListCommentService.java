@@ -1,4 +1,4 @@
-package com.workhub.checklist.service;
+package com.workhub.checklist.service.comment;
 
 import com.workhub.checklist.entity.CheckListItemComment;
 import com.workhub.checklist.repository.CheckListItemCommentRepository;

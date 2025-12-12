@@ -1,8 +1,8 @@
 package com.workhub.checklist.controller;
 
 import com.workhub.checklist.api.CheckListCommentApi;
-import com.workhub.checklist.dto.CheckListCommentRequest;
-import com.workhub.checklist.dto.CheckListCommentResponse;
+import com.workhub.checklist.dto.comment.CheckListCommentRequest;
+import com.workhub.checklist.dto.comment.CheckListCommentResponse;
 import com.workhub.checklist.service.comment.CreateCheckListCommentService;
 import com.workhub.global.response.ApiResponse;
 import jakarta.validation.Valid;

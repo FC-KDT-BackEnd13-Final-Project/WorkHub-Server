@@ -1,7 +1,7 @@
 package com.workhub.checklist.api;
 
-import com.workhub.checklist.dto.CheckListCommentRequest;
-import com.workhub.checklist.dto.CheckListCommentResponse;
+import com.workhub.checklist.dto.comment.CheckListCommentRequest;
+import com.workhub.checklist.dto.comment.CheckListCommentResponse;
 import com.workhub.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

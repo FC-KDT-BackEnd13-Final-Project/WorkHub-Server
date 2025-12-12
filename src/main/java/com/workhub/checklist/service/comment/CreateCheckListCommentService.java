@@ -1,13 +1,12 @@
 package com.workhub.checklist.service.comment;
 
-import com.workhub.checklist.dto.CheckListCommentRequest;
-import com.workhub.checklist.dto.CheckListCommentResponse;
+import com.workhub.checklist.dto.comment.CheckListCommentRequest;
+import com.workhub.checklist.dto.comment.CheckListCommentResponse;
 import com.workhub.checklist.entity.CheckList;
 import com.workhub.checklist.entity.CheckListItem;
 import com.workhub.checklist.entity.CheckListItemComment;
 import com.workhub.checklist.service.CheckListAccessValidator;
-import com.workhub.checklist.service.CheckListCommentService;
-import com.workhub.checklist.service.CheckListService;
+import com.workhub.checklist.service.checkList.CheckListService;
 import com.workhub.global.entity.ActionType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;

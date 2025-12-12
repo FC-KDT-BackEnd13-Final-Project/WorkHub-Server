@@ -1,4 +1,4 @@
-package com.workhub.checklist.dto;
+package com.workhub.checklist.dto.comment;
 
 import lombok.Builder;
 
