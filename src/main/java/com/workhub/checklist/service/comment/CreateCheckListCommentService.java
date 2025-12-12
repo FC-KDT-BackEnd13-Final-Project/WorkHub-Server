@@ -27,7 +27,6 @@ public class CreateCheckListCommentService {
     public CheckListCommentResponse create(
             Long projectId, Long nodeId, Long checkListId, Long checkListItemId, CheckListCommentRequest request) {
         checkListAccessValidator.validateProjectAndNode(projectId, nodeId);
-        checkListAccessValidator.checkProjectDevMemberOrAdmin(projectId);
         checkListAccessValidator.checkProjectMemberOrAdmin(projectId);
 
         validateContent(request.content());

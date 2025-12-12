@@ -107,7 +107,6 @@ class CreateCheckListCommentServiceTest {
         assertThat(response.userId()).isEqualTo(88L);
 
         verify(checkListAccessValidator).validateProjectAndNode(projectId, nodeId);
-        verify(checkListAccessValidator).checkProjectDevMemberOrAdmin(projectId);
         verify(checkListAccessValidator).checkProjectMemberOrAdmin(projectId);
         verify(checkListCommentService).save(any(CheckListItemComment.class));
         verify(checkListService)
