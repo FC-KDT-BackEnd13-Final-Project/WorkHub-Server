@@ -29,10 +29,12 @@ public record NodeListResponse(
     @Builder
     public static record DevMembers (
             Long devMemberId,
+            String devMemberLoginId,
             String devMemberName
     ){
         public static DevMembers from(UserTable user) {
             return DevMembers.builder()
+                    .devMemberId(user.getUserId())
                     .devMemberId(user.getUserId())
                     .devMemberName(user.getUserName())
                     .build();
