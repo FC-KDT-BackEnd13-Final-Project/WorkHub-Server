@@ -4,6 +4,7 @@ import com.workhub.cs.dto.csPost.CsPostFileRequest;
 import com.workhub.cs.dto.csPost.CsPostRequest;
 import com.workhub.cs.dto.csPost.CsPostResponse;
 import com.workhub.cs.entity.CsPost;
+import com.workhub.file.service.FileService;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.project.entity.Project;
@@ -38,6 +39,9 @@ class CreateCsPostServiceTest {
     @Mock
     private CsPostNotificationService csPostNotificationService;
 
+    @Mock
+    private FileService fileService;
+
     @InjectMocks
     private CreateCsPostService createCsPostService;
 
@@ -64,7 +68,7 @@ class CreateCsPostServiceTest {
         when(projectService.validateCompletedProject(projectId)).thenReturn(Project.builder().projectId(projectId).projectTitle("p").status(Status.COMPLETED).build());
         when(csPostService.save(any(CsPost.class))).thenReturn(mockSaved);
 
-        CsPostResponse result = createCsPostService.create(projectId, userId, request);
+        CsPostResponse result = createCsPostService.create(projectId, userId, request, null);
 
         assertThat(result.csPostId()).isEqualTo(1L);
         assertThat(result.title()).isEqualTo("문의 제목");
@@ -92,7 +96,7 @@ class CreateCsPostServiceTest {
         when(csPostService.save(any(CsPost.class))).thenReturn(mockSaved);
         when(csPostService.saveAllFiles(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        createCsPostService.create(projectId, userId, request);
+        createCsPostService.create(projectId, userId, request, null);
 
         verify(projectService).validateCompletedProject(projectId);
         verify(csPostService).save(any(CsPost.class));
@@ -109,7 +113,7 @@ class CreateCsPostServiceTest {
         when(projectService.validateCompletedProject(projectId)).thenReturn(Project.builder().projectId(projectId).projectTitle("p").status(Status.COMPLETED).build());
         when(csPostService.save(any(CsPost.class))).thenReturn(mockSaved);
 
-        createCsPostService.create(projectId, userId, request);
+        createCsPostService.create(projectId, userId, request, null);
 
         verify(projectService).validateCompletedProject(projectId);
         verify(csPostService).save(argThat(post ->
@@ -131,7 +135,7 @@ class CreateCsPostServiceTest {
                 new BusinessException(ErrorCode.INVALID_PROJECT_STATUS_FOR_CS_POST)
         );
 
-        assertThatThrownBy(() -> createCsPostService.create(projectId, userId, request))
+        assertThatThrownBy(() -> createCsPostService.create(projectId, userId, request, null))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_PROJECT_STATUS_FOR_CS_POST);
 

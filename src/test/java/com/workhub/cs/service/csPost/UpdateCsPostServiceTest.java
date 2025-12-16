@@ -6,6 +6,7 @@ import com.workhub.cs.entity.CsPost;
 import com.workhub.cs.entity.CsPostStatus;
 import com.workhub.cs.service.CsPostAccessValidator;
 import com.workhub.cs.service.csQna.CsQnaService;
+import com.workhub.file.service.FileService;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.history.HistoryRecorder;
@@ -43,6 +44,9 @@ class UpdateCsPostServiceTest {
 
     @Mock
     private CsQnaService csQnaService;
+
+    @Mock
+    private FileService fileService;
 
     @InjectMocks
     private UpdateCsPostService updateCsPostService;
@@ -88,7 +92,7 @@ class UpdateCsPostServiceTest {
         when(csPostService.findFilesByCsPostId(csPostId))
                 .thenReturn(List.of());
 
-        CsPostResponse result = updateCsPostService.update(projectId, csPostId, userId, request);
+        CsPostResponse result = updateCsPostService.update(projectId, csPostId, userId, request, null);
 
         assertThat(result.title()).isEqualTo("수정 제목");
         assertThat(result.content()).isEqualTo("수정 완료");
@@ -112,7 +116,7 @@ class UpdateCsPostServiceTest {
         when(csPostAccessValidator.validateProjectAndGetPost(projectId, csPostId))
                 .thenThrow(new BusinessException(ErrorCode.INVALID_PROJECT_STATUS_FOR_CS_POST));
 
-        assertThatThrownBy(() -> updateCsPostService.update(projectId, csPostId, userId, request))
+        assertThatThrownBy(() -> updateCsPostService.update(projectId, csPostId, userId, request, null))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_PROJECT_STATUS_FOR_CS_POST);
 
@@ -141,7 +145,7 @@ class UpdateCsPostServiceTest {
         when(csPostAccessValidator.validateProjectAndGetPost(projectId, csPostId))
                 .thenReturn(original);
 
-        assertThatThrownBy(() -> updateCsPostService.update(projectId, csPostId, requesterId, request))
+        assertThatThrownBy(() -> updateCsPostService.update(projectId, csPostId, requesterId, request, null))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN_CS_POST_UPDATE);
 
