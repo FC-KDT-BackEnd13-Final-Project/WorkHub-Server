@@ -4,6 +4,8 @@ import com.workhub.cs.dto.csPost.CsPostResponse;
 import com.workhub.cs.dto.csPost.CsPostUpdateRequest;
 import com.workhub.cs.entity.CsPost;
 import com.workhub.cs.entity.CsPostStatus;
+import com.workhub.cs.port.AuthorLookupPort;
+import com.workhub.cs.port.dto.AuthorProfile;
 import com.workhub.cs.service.CsPostAccessValidator;
 import com.workhub.cs.service.csQna.CsQnaService;
 import com.workhub.file.service.FileService;
@@ -21,10 +23,12 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,6 +52,9 @@ class UpdateCsPostServiceTest {
     @Mock
     private FileService fileService;
 
+    @Mock
+    private AuthorLookupPort authorLookupPort;
+
     @InjectMocks
     private UpdateCsPostService updateCsPostService;
 
@@ -62,6 +69,9 @@ class UpdateCsPostServiceTest {
                 .title("문의 제목")
                 .content("문의 내용")
                 .build();
+
+        lenient().when(authorLookupPort.findByUserId(anyLong()))
+                .thenAnswer(invocation -> Optional.of(new AuthorProfile(invocation.getArgument(0), "작성자")));
     }
 
     @Test
