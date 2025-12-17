@@ -6,6 +6,8 @@ import com.workhub.cs.entity.CsPost;
 import com.workhub.cs.entity.CsPostFile;
 import com.workhub.file.dto.FileUploadResponse;
 import com.workhub.file.service.FileService;
+import com.workhub.cs.port.AuthorLookupPort;
+import com.workhub.cs.port.dto.AuthorProfile;
 import com.workhub.global.entity.ActionType;
 import com.workhub.project.service.ProjectService;
 import jakarta.transaction.Transactional;
@@ -27,6 +29,7 @@ public class CreateCsPostService {
     private final CsPostService csPostService;
     private final ProjectService projectService;
     private final CsPostNotificationService csPostNotificationService;
+    private final AuthorLookupPort authorLookupPort;
     private final FileService fileService;
 
     /**
@@ -56,7 +59,11 @@ public class CreateCsPostService {
             csPostService.snapShotAndRecordHistory(csPost, csPost.getCsPostId(), ActionType.CREATE);
             csPostNotificationService.notifyCreated(projectId, csPost.getCsPostId(), csPost.getTitle());
 
-            return CsPostResponse.from(csPost, savedFiles);
+        String userName = authorLookupPort.findByUserId(userId)
+                .map(AuthorProfile::userName)
+                .orElse(null);
+
+        return CsPostResponse.from(csPost, savedFiles, userName);
 
         } catch (Exception e) {
             // 예외 발생 시 업로드된 S3 파일 삭제 (Best Effort)
