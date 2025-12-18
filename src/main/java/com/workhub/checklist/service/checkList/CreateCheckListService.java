@@ -5,6 +5,7 @@ import com.workhub.checklist.entity.checkList.CheckList;
 import com.workhub.checklist.entity.checkList.CheckListItem;
 import com.workhub.checklist.entity.checkList.CheckListOption;
 import com.workhub.checklist.entity.checkList.CheckListOptionFile;
+import com.workhub.checklist.event.CheckListCreatedEvent;
 import com.workhub.checklist.service.CheckListAccessValidator;
 import com.workhub.file.dto.FileUploadResponse;
 import com.workhub.file.service.FileService;
@@ -14,6 +15,7 @@ import com.workhub.global.error.exception.BusinessException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,6 +35,7 @@ public class CreateCheckListService {
     private final CheckListService checkListService;
     private final CheckListAccessValidator checkListAccessValidator;
     private final FileService fileService;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * CheckList를 생성한다.
@@ -75,6 +78,8 @@ public class CreateCheckListService {
                 throw new BusinessException(ErrorCode.CHECK_LIST_FILE_MAPPING_NOT_FOUND);
             }
 
+            eventPublisher.publishEvent(new CheckListCreatedEvent(projectId, nodeId));
+          
             return CheckListResponse.from(
                     checkList,
                     checkListService.resolveUserInfo(checkList.getUserId()),

@@ -10,6 +10,7 @@ import com.workhub.checklist.service.checkList.CheckListService;
 import com.workhub.checklist.service.checkList.CreateCheckListService;
 import com.workhub.file.dto.FileUploadResponse;
 import com.workhub.file.service.FileService;
+import com.workhub.checklist.event.CheckListCreatedEvent;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,6 +43,7 @@ class CreateCheckListServiceTest {
 
     @Mock
     private FileService fileService;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private CreateCheckListService createCheckListService;
@@ -138,6 +141,7 @@ class CreateCheckListServiceTest {
         verify(checkListService).saveCheckList(any(CheckList.class));
         verify(checkListService).saveCheckListItem(any(CheckListItem.class));
         verify(checkListService).saveCheckListOption(any(CheckListOption.class));
+        verify(eventPublisher).publishEvent(any(CheckListCreatedEvent.class));
     }
 
     @Test

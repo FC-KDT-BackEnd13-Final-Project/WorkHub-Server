@@ -5,6 +5,8 @@ import com.workhub.checklist.entity.checkList.CheckList;
 import com.workhub.checklist.entity.checkList.CheckListItem;
 import com.workhub.checklist.entity.checkList.CheckListOption;
 import com.workhub.checklist.entity.checkList.CheckListOptionFile;
+import com.workhub.checklist.event.CheckListItemStatusChangedEvent;
+import com.workhub.checklist.event.CheckListUpdatedEvent;
 import com.workhub.checklist.service.CheckListAccessValidator;
 import com.workhub.file.dto.FileUploadResponse;
 import com.workhub.file.service.FileService;
@@ -15,6 +17,7 @@ import com.workhub.global.util.SecurityUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,6 +48,7 @@ public class UpdateCheckListService {
     private final CheckListService checkListService;
     private final CheckListAccessValidator checkListAccessValidator;
     private final FileService fileService;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 체크리스트 업데이트
@@ -92,6 +96,12 @@ public class UpdateCheckListService {
 
             deleteFilesFromS3(filesToDelete);
 
+            eventPublisher.publishEvent(new CheckListUpdatedEvent(
+                    projectId,
+                    nodeId,
+                    "체크리스트가 수정되었습니다."
+            ));
+          
             return checkListService.buildResponse(
                     details,
                     checkListService.resolveUserInfo(checkList.getUserId())
@@ -407,6 +417,15 @@ public class UpdateCheckListService {
 
         item.updateStatus(status);
         checkListService.snapShotAndRecordHistory(item, item.getCheckListItemId(), ActionType.UPDATE);
+
+        eventPublisher.publishEvent(new CheckListItemStatusChangedEvent(
+                projectId,
+                nodeId,
+                checkListId,
+                checkListItemId,
+                item.getItemTitle(),
+                status
+        ));
 
         return item.getStatus();
     }
