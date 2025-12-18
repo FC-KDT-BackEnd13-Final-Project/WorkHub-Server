@@ -59,6 +59,8 @@ class UpdateCheckListServiceTest {
 
     @Mock
     private FileService fileService;
+
+    @Mock
     private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
