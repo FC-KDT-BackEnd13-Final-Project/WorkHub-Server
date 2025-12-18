@@ -13,9 +13,12 @@ import com.workhub.checklist.entity.checkList.CheckList;
 import com.workhub.checklist.entity.checkList.CheckListItem;
 import com.workhub.checklist.entity.checkList.CheckListOption;
 import com.workhub.checklist.entity.checkList.CheckListOptionFile;
+import com.workhub.checklist.event.CheckListItemStatusChangedEvent;
+import com.workhub.checklist.event.CheckListUpdatedEvent;
 import com.workhub.checklist.service.CheckListAccessValidator;
 import com.workhub.checklist.service.checkList.CheckListService;
 import com.workhub.checklist.service.checkList.UpdateCheckListService;
+import com.workhub.file.service.FileService;
 import com.workhub.global.entity.ActionType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
@@ -29,6 +32,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +42,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -51,6 +56,12 @@ class UpdateCheckListServiceTest {
 
     @Mock
     private CheckListAccessValidator checkListAccessValidator;
+
+    @Mock
+    private FileService fileService;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private UpdateCheckListService updateCheckListService;
@@ -102,6 +113,8 @@ class UpdateCheckListServiceTest {
                 .build();
 
         ownerInfo = CheckListUserInfo.of("담당자", "010-9999-9999");
+        lenient().when(fileService.uploadFiles(any())).thenReturn(List.of());
+        lenient().doNothing().when(fileService).deleteFiles(any());
     }
 
     @AfterEach
@@ -141,7 +154,7 @@ class UpdateCheckListServiceTest {
         given(checkListService.buildResponse(details, ownerInfo)).willReturn(expectedResponse);
 
         // when
-        CheckListResponse response = updateCheckListService.update(1L, 10L, request);
+        CheckListResponse response = updateCheckListService.update(1L, 10L, request, List.of());
 
         // then
         assertThat(response.checkListId()).isEqualTo(checkList.getCheckListId());
@@ -269,7 +282,7 @@ class UpdateCheckListServiceTest {
         given(checkListService.buildResponse(details, ownerInfo)).willReturn(expectedResponse);
 
         // when
-        CheckListResponse response = updateCheckListService.update(1L, 10L, request);
+        CheckListResponse response = updateCheckListService.update(1L, 10L, request, List.of());
 
         // then
         assertThat(response).isNotNull();
@@ -288,6 +301,7 @@ class UpdateCheckListServiceTest {
         verify(checkListService).deleteCheckListOptionFiles(filesForItemDelete);
         verify(checkListService).deleteCheckListOptions(optionsForDeleteItem);
         verify(checkListService).deleteCheckListItem(itemToDelete);
+        verify(eventPublisher).publishEvent(any(CheckListUpdatedEvent.class));
     }
 
     @Test
@@ -324,6 +338,7 @@ class UpdateCheckListServiceTest {
         verify(checkListAccessValidator).validateProjectAndNode(projectId, nodeId);
         verify(checkListAccessValidator).chekProjectClientMember(projectId);
         verify(checkListService).snapShotAndRecordHistory(item, itemId, ActionType.UPDATE);
+        verify(eventPublisher).publishEvent(any(CheckListItemStatusChangedEvent.class));
     }
 
     @Test
