@@ -1,9 +1,9 @@
 package com.workhub.post.service.comment;
 
+import com.workhub.global.port.AuthorLookupPort;
 import com.workhub.post.dto.comment.response.CommentResponse;
 import com.workhub.post.entity.PostComment;
 import com.workhub.post.service.PostValidator;
-import com.workhub.userTable.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class ReadCommentService {
     private final CommentService commentService;
     private final PostValidator postValidator;
-    private final UserRepository userRepository;
+    private final AuthorLookupPort authorLookupPort;
 
     public Page<CommentResponse> findComment(Long projectId, Long postId, Pageable pageable) {
         postValidator.validatePostToProject(postId, projectId);
@@ -56,8 +56,8 @@ public class ReadCommentService {
                 .collect(Collectors.groupingBy(PostComment::getParentCommentId));
 
         Set<Long> userIds = allComments.stream().map(PostComment::getUserId).collect(Collectors.toSet());
-        Map<Long, String> userNameMap = userRepository.findAllById(userIds).stream()
-                .collect(Collectors.toMap(u -> u.getUserId(), u -> u.getUserName()));
+        Map<Long, String> userNameMap = authorLookupPort.findByUserIds(userIds.stream().toList()).entrySet().stream()
+                .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue().userName()));
 
         return topLevelComments.stream()
                 .map(parent -> buildCommentWithChildren(parent, childrenMap, userNameMap))

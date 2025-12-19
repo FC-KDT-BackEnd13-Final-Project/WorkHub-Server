@@ -5,6 +5,8 @@ import com.workhub.global.entity.HistoryType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.history.HistoryRecorder;
+import com.workhub.global.port.AuthorLookupPort;
+import com.workhub.global.port.dto.AuthorProfile;
 import com.workhub.post.dto.comment.CommentHistorySnapshot;
 import com.workhub.post.dto.comment.request.CommentRequest;
 import com.workhub.post.dto.comment.response.CommentResponse;
@@ -22,8 +24,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.context.ApplicationEventPublisher;
-import com.workhub.userTable.entity.UserTable;
-import com.workhub.userTable.repository.UserRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -46,7 +46,7 @@ class CreateCommentServiceTest {
     @Mock
     ApplicationEventPublisher eventPublisher;
     @Mock
-    UserRepository userRepository;
+    AuthorLookupPort authorLookupPort;
 
     @InjectMocks
     CreateCommentService createCommentService;
@@ -85,7 +85,7 @@ class CreateCommentServiceTest {
         CommentRequest request = new CommentRequest("hello", null);
         PostComment saved = mockComment(10L, 2L, null, "hello");
         given(commentService.save(any(PostComment.class))).willReturn(saved);
-        given(userRepository.findById(3L)).willReturn(java.util.Optional.of(UserTable.builder().userId(3L).userName("작성자").build()));
+        given(authorLookupPort.findByUserId(3L)).willReturn(java.util.Optional.of(new AuthorProfile(3L, "작성자")));
 
         CommentResponse response = createCommentService.create(1L, 2L, 3L, request);
 

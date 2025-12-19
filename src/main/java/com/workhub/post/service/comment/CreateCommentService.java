@@ -5,6 +5,8 @@ import com.workhub.global.entity.HistoryType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.history.HistoryRecorder;
+import com.workhub.global.port.AuthorLookupPort;
+import com.workhub.global.port.dto.AuthorProfile;
 import com.workhub.post.dto.comment.CommentHistorySnapshot;
 import com.workhub.post.dto.comment.request.CommentRequest;
 import com.workhub.post.dto.comment.response.CommentResponse;
@@ -16,7 +18,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import com.workhub.userTable.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +27,7 @@ public class CreateCommentService {
     private final HistoryRecorder historyRecorder;
     private final PostValidator postValidator;
     private final ApplicationEventPublisher eventPublisher;
-    private final UserRepository userRepository;
+    private final AuthorLookupPort authorLookupPort;
 
     /**
      * 댓글을 생성하고 히스토리를 기록한다.
@@ -47,7 +48,9 @@ public class CreateCommentService {
 
         snapshotAndRecordHistory(postComment, ActionType.CREATE);
         eventPublisher.publishEvent(new CommentCreatedEvent(projectId, post, postComment));
-        String userName = userRepository.findById(userId).map(u -> u.getUserName()).orElse(null);
+        String userName = authorLookupPort.findByUserId(userId)
+                .map(AuthorProfile::userName)
+                .orElse(null);
         return CommentResponse.from(postComment, userName);
     }
 

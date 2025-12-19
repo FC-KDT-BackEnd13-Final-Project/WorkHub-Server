@@ -1,13 +1,13 @@
 package com.workhub.post.service.post;
 
+import com.workhub.global.port.AuthorLookupPort;
+import com.workhub.post.dto.post.response.PostResponse;
 import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostType;
-import com.workhub.post.dto.post.response.PostResponse;
 import com.workhub.post.repository.post.PostFileRepository;
 import com.workhub.post.repository.post.PostLinkRepository;
 import com.workhub.post.repository.post.PostRepository;
 import com.workhub.post.service.PostValidator;
-import com.workhub.userTable.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,17 +38,18 @@ class ReadPostServiceTest {
     @Mock
     PostValidator postValidator;
     @Mock
-    UserRepository userRepository;
+    AuthorLookupPort authorLookupPort;
 
     ReadPostService readPostService;
 
     @BeforeEach
     void setUp() {
-        readPostService = new ReadPostService(postService, postValidator, userRepository);
+        readPostService = new ReadPostService(postService, postValidator, authorLookupPort);
         given(postRepository.findByParentPostIdAndDeletedAtIsNull(anyLong())).willReturn(Collections.emptyList());
         given(postFileRepository.findByPostId(anyLong())).willReturn(Collections.emptyList());
         given(postLinkRepository.findByPostId(anyLong())).willReturn(Collections.emptyList());
         willDoNothing().given(postValidator).validateNodeAndProject(anyLong(), anyLong());
+        given(authorLookupPort.findByUserId(anyLong())).willReturn(Optional.empty());
     }
 
     @Test

@@ -5,13 +5,14 @@ import com.workhub.global.entity.HistoryType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.history.HistoryRecorder;
+import com.workhub.global.port.AuthorLookupPort;
+import com.workhub.global.port.dto.AuthorProfile;
 import com.workhub.post.dto.comment.CommentHistorySnapshot;
 import com.workhub.post.dto.comment.request.CommentUpdateRequest;
 import com.workhub.post.dto.comment.response.CommentResponse;
 import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostComment;
 import com.workhub.post.service.PostValidator;
-import com.workhub.userTable.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +37,7 @@ class UpdateCommentServiceTest {
     @Mock
     PostValidator postValidator;
     @Mock
-    UserRepository userRepository;
+    AuthorLookupPort authorLookupPort;
 
     @InjectMocks
     UpdateCommentService updateCommentService;
@@ -60,6 +61,7 @@ class UpdateCommentServiceTest {
         given(commentService.findByCommentAndMatchedUserId(1L, 3L)).willReturn(existing);
         CommentHistorySnapshot expectedSnapshot = CommentHistorySnapshot.from(existing);
         given(postValidator.validatePostToProject(anyLong(), anyLong())).willReturn(Post.builder().build());
+        given(authorLookupPort.findByUserId(3L)).willReturn(java.util.Optional.of(new AuthorProfile(3L, "작성자")));
 
         CommentResponse response = updateCommentService.update(10L, 1L, 2L, 3L, new CommentUpdateRequest("new"));
 

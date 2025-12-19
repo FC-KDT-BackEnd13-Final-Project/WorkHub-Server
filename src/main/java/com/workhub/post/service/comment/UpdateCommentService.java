@@ -5,12 +5,13 @@ import com.workhub.global.entity.HistoryType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.history.HistoryRecorder;
+import com.workhub.global.port.AuthorLookupPort;
+import com.workhub.global.port.dto.AuthorProfile;
 import com.workhub.post.dto.comment.CommentHistorySnapshot;
 import com.workhub.post.dto.comment.request.CommentUpdateRequest;
 import com.workhub.post.dto.comment.response.CommentResponse;
 import com.workhub.post.entity.PostComment;
 import com.workhub.post.service.PostValidator;
-import com.workhub.userTable.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ public class UpdateCommentService {
     private final CommentService commentService;
     private final HistoryRecorder historyRecorder;
     private final PostValidator postValidator;
-    private final UserRepository userRepository;
+    private final AuthorLookupPort authorLookupPort;
 
     /**
      * 댓글을 수정하고 변경 전 내용을 히스토리에 저장한다.
@@ -43,7 +44,9 @@ public class UpdateCommentService {
         snapshotAndRecordHistory(postComment, ActionType.UPDATE);
 
         postComment.updateContent(commentUpdateRequest.commentContext());
-        String userName = userRepository.findById(userId).map(u -> u.getUserName()).orElse(null);
+        String userName = authorLookupPort.findByUserId(userId)
+                .map(AuthorProfile::userName)
+                .orElse(null);
         return CommentResponse.from(postComment, userName);
     }
 

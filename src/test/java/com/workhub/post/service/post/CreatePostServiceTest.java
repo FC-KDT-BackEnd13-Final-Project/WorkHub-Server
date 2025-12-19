@@ -14,8 +14,8 @@ import com.workhub.post.entity.PostFile;
 import com.workhub.post.entity.PostType;
 import com.workhub.post.service.PostValidator;
 import com.workhub.post.event.PostCreatedEvent;
-import com.workhub.userTable.entity.UserTable;
-import com.workhub.userTable.repository.UserRepository;
+import com.workhub.global.port.AuthorLookupPort;
+import com.workhub.global.port.dto.AuthorProfile;
 import org.springframework.context.ApplicationEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -52,7 +52,7 @@ class CreatePostServiceTest {
     private ApplicationEventPublisher eventPublisher;
 
     @Mock
-    private UserRepository userRepository;
+    private AuthorLookupPort authorLookupPort;
 
     @Mock
     private FileService fileService;
@@ -117,7 +117,7 @@ class CreatePostServiceTest {
                 .userId(30L)
                 .build();
         when(postService.save(any(Post.class))).thenReturn(saved);
-        when(userRepository.findById(30L)).thenReturn(java.util.Optional.of(UserTable.builder().userId(30L).userName("작성자").build()));
+        when(authorLookupPort.findByUserId(30L)).thenReturn(java.util.Optional.of(new AuthorProfile(30L, "작성자")));
 
         PostRequest request = new PostRequest(
                 "title", PostType.NOTICE, "content", "127.0.0.1", null, List.of()

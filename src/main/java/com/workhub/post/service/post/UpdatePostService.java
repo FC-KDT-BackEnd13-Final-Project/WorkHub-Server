@@ -5,8 +5,8 @@ import com.workhub.global.entity.HistoryType;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.global.history.HistoryRecorder;
-import com.workhub.post.event.PostUpdatedEvent;
-import org.springframework.context.ApplicationEventPublisher;
+import com.workhub.global.port.AuthorLookupPort;
+import com.workhub.global.port.dto.AuthorProfile;
 import com.workhub.post.dto.post.PostHistorySnapshot;
 import com.workhub.post.dto.post.request.PostFileUpdateRequest;
 import com.workhub.post.dto.post.request.PostLinkUpdateRequest;
@@ -15,10 +15,11 @@ import com.workhub.post.dto.post.response.PostResponse;
 import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostFile;
 import com.workhub.post.entity.PostLink;
+import com.workhub.post.event.PostUpdatedEvent;
 import com.workhub.post.service.PostValidator;
-import com.workhub.userTable.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -33,7 +34,7 @@ public class UpdatePostService {
     private final PostValidator postValidator;
     private final HistoryRecorder historyRecorder;
     private final ApplicationEventPublisher eventPublisher;
-    private final UserRepository userRepository;
+    private final AuthorLookupPort authorLookupPort;
 
 
     /**
@@ -64,7 +65,9 @@ public class UpdatePostService {
 
         eventPublisher.publishEvent(new PostUpdatedEvent(projectId, target));
 
-        String userName = userRepository.findById(userId).map(u -> u.getUserName()).orElse(null);
+        String userName = authorLookupPort.findByUserId(userId)
+                .map(AuthorProfile::userName)
+                .orElse(null);
         return PostResponse.from(target, visibleFiles, visibleLinks, userName);
     }
 
