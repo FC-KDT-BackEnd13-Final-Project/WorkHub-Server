@@ -22,6 +22,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.context.ApplicationEventPublisher;
+import com.workhub.userTable.entity.UserTable;
+import com.workhub.userTable.repository.UserRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -43,6 +45,8 @@ class CreateCommentServiceTest {
     PostValidator postValidator;
     @Mock
     ApplicationEventPublisher eventPublisher;
+    @Mock
+    UserRepository userRepository;
 
     @InjectMocks
     CreateCommentService createCommentService;
@@ -81,6 +85,7 @@ class CreateCommentServiceTest {
         CommentRequest request = new CommentRequest("hello", null);
         PostComment saved = mockComment(10L, 2L, null, "hello");
         given(commentService.save(any(PostComment.class))).willReturn(saved);
+        given(userRepository.findById(3L)).willReturn(java.util.Optional.of(UserTable.builder().userId(3L).userName("작성자").build()));
 
         CommentResponse response = createCommentService.create(1L, 2L, 3L, request);
 
@@ -92,6 +97,7 @@ class CreateCommentServiceTest {
                 eq(CommentHistorySnapshot.from(saved))
         );
         verify(eventPublisher).publishEvent(any(CommentCreatedEvent.class));
+        assertThat(response.userName()).isEqualTo("작성자");
     }
 
     private PostComment mockComment(Long commentId, Long postId, Long parentId, String content) {

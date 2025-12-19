@@ -16,6 +16,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import com.workhub.userTable.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ public class CreateCommentService {
     private final HistoryRecorder historyRecorder;
     private final PostValidator postValidator;
     private final ApplicationEventPublisher eventPublisher;
+    private final UserRepository userRepository;
 
     /**
      * 댓글을 생성하고 히스토리를 기록한다.
@@ -45,7 +47,8 @@ public class CreateCommentService {
 
         snapshotAndRecordHistory(postComment, ActionType.CREATE);
         eventPublisher.publishEvent(new CommentCreatedEvent(projectId, post, postComment));
-        return CommentResponse.from(postComment);
+        String userName = userRepository.findById(userId).map(u -> u.getUserName()).orElse(null);
+        return CommentResponse.from(postComment, userName);
     }
 
     /**

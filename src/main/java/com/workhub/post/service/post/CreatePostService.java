@@ -16,6 +16,7 @@ import com.workhub.post.entity.PostFile;
 import com.workhub.post.entity.PostLink;
 import com.workhub.post.event.PostCreatedEvent;
 import com.workhub.post.service.PostValidator;
+import com.workhub.userTable.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,7 @@ public class CreatePostService {
     private final HistoryRecorder historyRecorder;
     private final ApplicationEventPublisher eventPublisher;
     private final FileService fileService;
+    private final UserRepository userRepository;
 
     /**
      * 게시글 생성 시 프로젝트 상태와 부모 게시글 유효성을 검증한 뒤 저장한다.
@@ -78,7 +80,8 @@ public class CreatePostService {
             historyRecorder.recordHistory(HistoryType.POST, savedPost.getPostId(), ActionType.CREATE, PostHistorySnapshot.from(savedPost));
             eventPublisher.publishEvent(new PostCreatedEvent(projectId, savedPost));
 
-            return PostResponse.from(savedPost, savedFiles, savedLinks);
+            String userName = userRepository.findById(userId).map(u -> u.getUserName()).orElse(null);
+            return PostResponse.from(savedPost, savedFiles, savedLinks, userName);
 
         } catch (Exception e) {
             // 예외 발생 시 업로드된 S3 파일 삭제 (Best Effort)

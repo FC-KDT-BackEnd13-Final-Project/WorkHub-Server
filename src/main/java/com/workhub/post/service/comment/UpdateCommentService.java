@@ -10,6 +10,7 @@ import com.workhub.post.dto.comment.request.CommentUpdateRequest;
 import com.workhub.post.dto.comment.response.CommentResponse;
 import com.workhub.post.entity.PostComment;
 import com.workhub.post.service.PostValidator;
+import com.workhub.userTable.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class UpdateCommentService {
     private final CommentService commentService;
     private final HistoryRecorder historyRecorder;
     private final PostValidator postValidator;
+    private final UserRepository userRepository;
 
     /**
      * 댓글을 수정하고 변경 전 내용을 히스토리에 저장한다.
@@ -41,7 +43,8 @@ public class UpdateCommentService {
         snapshotAndRecordHistory(postComment, ActionType.UPDATE);
 
         postComment.updateContent(commentUpdateRequest.commentContext());
-        return CommentResponse.from(postComment);
+        String userName = userRepository.findById(userId).map(u -> u.getUserName()).orElse(null);
+        return CommentResponse.from(postComment, userName);
     }
 
     /**

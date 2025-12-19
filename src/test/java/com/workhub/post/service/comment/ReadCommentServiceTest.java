@@ -4,6 +4,7 @@ import com.workhub.post.dto.comment.response.CommentResponse;
 import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostComment;
 import com.workhub.post.service.PostValidator;
+import com.workhub.userTable.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,13 +31,15 @@ class ReadCommentServiceTest {
     CommentService commentService;
     @Mock
     PostValidator postValidator;
+    @Mock
+    UserRepository userRepository;
 
     @InjectMocks
     ReadCommentService readCommentService;
 
     @BeforeEach
     void setUp() {
-        readCommentService = new ReadCommentService(commentService, postValidator);
+        readCommentService = new ReadCommentService(commentService, postValidator, userRepository);
         given(postValidator.validatePostToProject(anyLong(), anyLong()))
                 .willReturn(Post.builder().build());
     }

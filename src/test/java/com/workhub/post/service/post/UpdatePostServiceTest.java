@@ -12,6 +12,7 @@ import com.workhub.post.repository.post.PostLinkRepository;
 import com.workhub.post.repository.post.PostRepository;
 import com.workhub.post.service.PostValidator;
 import com.workhub.post.event.PostUpdatedEvent;
+import com.workhub.userTable.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,12 +51,14 @@ class UpdatePostServiceTest {
     HistoryRecorder historyRecorder;
     @Mock
     ApplicationEventPublisher eventPublisher;
+    @Mock
+    UserRepository userRepository;
 
     UpdatePostService updatePostService;
 
     @BeforeEach
     void setUp() {
-        updatePostService = new UpdatePostService(postService, postValidator, historyRecorder, eventPublisher);
+        updatePostService = new UpdatePostService(postService, postValidator, historyRecorder, eventPublisher, userRepository);
         willDoNothing().given(postValidator).validateNodeAndProject(anyLong(), anyLong());
     }
 

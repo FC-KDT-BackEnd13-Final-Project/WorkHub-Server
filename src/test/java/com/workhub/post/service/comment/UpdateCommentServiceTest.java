@@ -11,6 +11,7 @@ import com.workhub.post.dto.comment.response.CommentResponse;
 import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostComment;
 import com.workhub.post.service.PostValidator;
+import com.workhub.userTable.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +35,8 @@ class UpdateCommentServiceTest {
     HistoryRecorder historyRecorder;
     @Mock
     PostValidator postValidator;
+    @Mock
+    UserRepository userRepository;
 
     @InjectMocks
     UpdateCommentService updateCommentService;

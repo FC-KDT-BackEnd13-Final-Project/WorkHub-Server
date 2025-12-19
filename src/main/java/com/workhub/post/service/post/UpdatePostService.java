@@ -16,6 +16,7 @@ import com.workhub.post.entity.Post;
 import com.workhub.post.entity.PostFile;
 import com.workhub.post.entity.PostLink;
 import com.workhub.post.service.PostValidator;
+import com.workhub.userTable.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class UpdatePostService {
     private final PostValidator postValidator;
     private final HistoryRecorder historyRecorder;
     private final ApplicationEventPublisher eventPublisher;
+    private final UserRepository userRepository;
 
 
     /**
@@ -62,7 +64,8 @@ public class UpdatePostService {
 
         eventPublisher.publishEvent(new PostUpdatedEvent(projectId, target));
 
-        return PostResponse.from(target, visibleFiles, visibleLinks);
+        String userName = userRepository.findById(userId).map(u -> u.getUserName()).orElse(null);
+        return PostResponse.from(target, visibleFiles, visibleLinks, userName);
     }
 
     /**

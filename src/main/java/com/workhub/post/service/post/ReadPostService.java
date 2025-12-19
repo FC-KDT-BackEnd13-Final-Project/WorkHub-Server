@@ -8,6 +8,7 @@ import com.workhub.post.dto.post.response.PostPageResponse;
 import com.workhub.post.dto.post.response.PostResponse;
 import com.workhub.post.dto.post.response.PostThreadResponse;
 import com.workhub.post.service.PostValidator;
+import com.workhub.userTable.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,7 @@ public class ReadPostService {
 
     private final PostService postService;
     private final PostValidator postValidator;
+    private final UserRepository userRepository;
     /**
      * 프로젝트/노드 범위 내 게시글을 단건 조회한다.
      *
@@ -45,8 +47,9 @@ public class ReadPostService {
                 .filter(link -> link.getDeletedAt() == null)
                 .toList();
 
+        String userName = userRepository.findById(post.getUserId()).map(u -> u.getUserName()).orElse(null);
 
-        return PostResponse.from(post, files, links);
+        return PostResponse.from(post, files, links, userName);
     }
 
     /**
