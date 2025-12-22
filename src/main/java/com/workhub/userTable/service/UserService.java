@@ -138,4 +138,8 @@ public class UserService {
                 .map(UserNameResponse::from)
                 .toList();
     }
+
+    public Long countActiveUsers(){
+        return userRepository.countByStatus(Status.ACTIVE);
+    }
 }
