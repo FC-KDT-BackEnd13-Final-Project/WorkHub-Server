@@ -1,5 +1,6 @@
 package com.workhub.projectNode.repository;
 
+import com.workhub.projectNode.entity.NodeStatus;
 import com.workhub.projectNode.entity.ProjectNode;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -17,4 +18,7 @@ public interface ProjectNodeRepository extends JpaRepository<ProjectNode,Long>, 
     List<ProjectNode> findByProjectIdAndDeletedAtIsNull(Long projectId);
 
     Optional<ProjectNode> findTopByProjectIdAndDeletedAtIsNullOrderByNodeOrderDesc(Long projectId);
+
+    long countByProjectIdInAndNodeStatusIn(List<Long> projectIds, List<NodeStatus> statuses);
+
 }
