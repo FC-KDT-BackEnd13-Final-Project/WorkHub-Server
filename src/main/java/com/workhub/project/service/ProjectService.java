@@ -91,6 +91,10 @@ public class ProjectService {
         return devMemberRepository.findByProjectIdIn(List.of(projectId));
     }
 
+    public Long countProjectsOverlapping(LocalDate monthStart, LocalDate monthEnd) {
+        return projectRepository.countProjectsOverlapping(monthStart, monthEnd);
+    }
+
     public void validateDevMemberForProject(Long projectId, Long devMemberId) {
         if(!devMemberRepository.existsByProjectIdAndUserId(projectId, devMemberId)) {
             throw new BusinessException(ErrorCode.NOT_EXISTS_DEV_MEMBER);
