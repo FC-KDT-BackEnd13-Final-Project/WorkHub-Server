@@ -1,6 +1,7 @@
 package com.workhub.dashboard.controller;
 
 import com.workhub.dashboard.api.DashBoardAdminApi;
+import com.workhub.dashboard.dto.admin.CompanyCountResponse;
 import com.workhub.dashboard.dto.admin.UserCountResponse;
 import com.workhub.dashboard.service.admin.DashBoardAdminService;
 import com.workhub.global.response.ApiResponse;
@@ -26,5 +27,14 @@ public class DashBoardAdminController implements DashBoardAdminApi {
         UserCountResponse userCount = dashBoardAdminService.getUserCount();
 
         return ApiResponse.success(userCount, "총 유저가 조회되었습니다.");
+    }
+
+    @Override
+    @GetMapping("/companies/count")
+    public ResponseEntity<ApiResponse<CompanyCountResponse>> getCompanyCount() {
+
+        CompanyCountResponse companyCount = dashBoardAdminService.getCompanyCount();
+
+        return ApiResponse.success(companyCount, "총 회사가 조회되었습니다.");
     }
 }
