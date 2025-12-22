@@ -1,6 +1,7 @@
 package com.workhub.dashboard.api;
 
 import com.workhub.dashboard.dto.admin.CompanyCountResponse;
+import com.workhub.dashboard.dto.admin.ProjectCountResponse;
 import com.workhub.dashboard.dto.admin.UserCountResponse;
 import com.workhub.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -76,4 +77,34 @@ public interface DashBoardAdminApi {
     })
     @GetMapping(value = "/companies/count", produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<ApiResponse<CompanyCountResponse>> getCompanyCount();
+
+    @Operation(
+            summary = "총 프로젝트 수 집계",
+            description = "진행/완료 상태의 전체 프로젝트 수를 관리자 권한으로 조회합니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "총 프로젝트 수 조회 성공",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "관리자 권한 없음",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
+            )
+    })
+    @GetMapping(value = "/projects/count", produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<ApiResponse<ProjectCountResponse>> getProjectCount();
 }

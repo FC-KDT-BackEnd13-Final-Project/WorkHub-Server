@@ -1,7 +1,9 @@
 package com.workhub.dashboard.service.admin;
 
+import com.workhub.dashboard.dto.admin.ProjectCountResponse;
 import com.workhub.dashboard.dto.admin.CompanyCountResponse;
 import com.workhub.dashboard.dto.admin.UserCountResponse;
+import com.workhub.project.service.ProjectService;
 import com.workhub.userTable.service.CompanyService;
 import com.workhub.userTable.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ public class DashBoardAdminService {
 
     private final UserService userService;
     private final CompanyService companyService;
+    private final ProjectService projectService;
 
     public UserCountResponse getUserCount() {
 
@@ -24,6 +27,12 @@ public class DashBoardAdminService {
     }
 
     public CompanyCountResponse getCompanyCount() {
+
         return CompanyCountResponse.from(companyService.countActiveCompanies());
+    }
+
+    public ProjectCountResponse getProjectCount() {
+
+        return ProjectCountResponse.from(projectService.countInProgressOrCompletedProjects());
     }
 }
