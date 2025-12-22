@@ -3,6 +3,7 @@ package com.workhub.projectNode.service;
 import com.workhub.global.error.ErrorCode;
 import com.workhub.global.error.exception.BusinessException;
 import com.workhub.projectNode.dto.ProjectNodeCount;
+import com.workhub.projectNode.entity.ConfirmStatus;
 import com.workhub.projectNode.entity.NodeStatus;
 import com.workhub.projectNode.entity.ProjectNode;
 import com.workhub.projectNode.repository.ProjectNodeRepository;
@@ -61,5 +62,10 @@ public class ProjectNodeService {
 
     public long countByProjectIdInAndStatusIn(List<Long> projectIds, List<NodeStatus> statuses) {
         return projectNodeRepository.countByProjectIdInAndNodeStatusIn(projectIds, statuses);
+    }
+
+    public ConfirmStatus getNodeConfirmStatus(Long nodeId) {
+        return projectNodeRepository.findConfirmStatusById(nodeId)
+                .orElse(ConfirmStatus.NOT_PENDING);
     }
 }
