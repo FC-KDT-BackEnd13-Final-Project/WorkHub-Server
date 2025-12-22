@@ -1,8 +1,11 @@
 package com.workhub.projectNode.repository;
 
 import com.workhub.projectNode.entity.NodeStatus;
+import com.workhub.projectNode.entity.ConfirmStatus;
 import com.workhub.projectNode.entity.ProjectNode;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,4 +24,6 @@ public interface ProjectNodeRepository extends JpaRepository<ProjectNode,Long>, 
 
     long countByProjectIdInAndNodeStatusIn(List<Long> projectIds, List<NodeStatus> statuses);
 
+    @Query("SELECT p.confirmStatus FROM ProjectNode p WHERE p.projectNodeId = :nodeId")
+    Optional<ConfirmStatus> findConfirmStatusById(@Param("nodeId") Long nodeId);
 }
