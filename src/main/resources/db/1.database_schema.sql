@@ -350,6 +350,7 @@ CREATE TABLE check_list_option (
     option_content VARCHAR(300) NOT NULL,
     option_order INTEGER NOT NULL,
     check_list_item_id BIGINT NOT NULL,
+    is_selected BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NULL,
     updated_at TIMESTAMP NULL,
     deleted_at TIMESTAMP NULL
@@ -411,6 +412,9 @@ CREATE TABLE project_notification (
     notification_content VARCHAR(100) NOT NULL,
     related_url VARCHAR(50) NULL,
     read_at TIMESTAMP NULL,
+    sender_user_id BIGINT NULL,
+    sender_name VARCHAR(50) NULL,
+    sender_profile_img VARCHAR(255) NULL,
     user_id BIGINT NULL,
     project_node_id BIGINT NULL,
     cs_qna_id BIGINT NULL,
